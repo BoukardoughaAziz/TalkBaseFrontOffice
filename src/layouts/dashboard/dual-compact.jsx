@@ -1,11 +1,10 @@
 import { useEffect } from 'react'
 import { Button } from 'react-bootstrap'
 
-//react-bootstrap
+//react-bootstrap 
 import { Link } from "react-router-dom";
 
-//HorizontalMulti2Router
-import HorizontalMulti2Router from '../../router/horizontal-multi-2-router'
+//HorizontalMulti2Router 
 
 //herder
 import HeaderStyle4 from '../../components/partials/dashboard/HeaderStyle/header-style-4'
@@ -34,7 +33,7 @@ const DualCompact = memo((props) => {
       <main className="main-content">
         <HeaderStyle4 />
         <div className="conatiner-fluid content-inner">
-          <HorizontalMulti2Router />
+          {/* <HorizontalMulti2Router /> */}
         </div>
         <div className="btn-download">
           <Button className="btn btn-success px-3 py-2" variant=" " href="https://iqonic.design/product/admin-templates/hope-ui-free-open-source-react-admin-template/" target="_blank" >
@@ -47,9 +46,7 @@ const DualCompact = memo((props) => {
         <Footer />
       </main>
       <SettingOffCanvas/>
-      <Link className="btn btn-fixed-end btn-secondary btn-icon btn-dashboard" to="/landing-modules/home" target="_blank" >
-         Landing Pages
-      </Link>
+     
     </Fragment>
   )
 })

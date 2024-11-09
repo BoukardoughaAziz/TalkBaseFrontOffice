@@ -1,9 +1,9 @@
 import React from 'react'
-import Index from '../views/dashboard/index'
+import ChatModule from '../views/dashboard/ChatModule'
 const HorizontalRouter = () => {
     return (
         <div>
-            <Index />
+            <ChatModule />
         </div>
     )
 }

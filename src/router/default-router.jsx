@@ -1,5 +1,5 @@
 import React from 'react'
-import Index from '../views/dashboard/index'
+import ChatModule from '../views/dashboard/ChatModule'
 // import { Switch, Route } from 'react-router-dom'
 // user
 import UserProfile from '../views/dashboard/app/user-profile';
@@ -51,7 +51,7 @@ export const DefaultRouter = [
         children: [
             {
                 path: 'dashboard',
-                element: <Index />
+                element: <ChatModule />
             },
             {
                 path: 'dashboard/special-pages/billing',
