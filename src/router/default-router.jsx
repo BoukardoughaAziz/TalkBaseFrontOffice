@@ -1,5 +1,5 @@
 import React from 'react'
-import Index from '../views/dashboard/index'
+import ChatModule from '../views/dashboard/ChatModule'
 // import { Switch, Route } from 'react-router-dom'
 // user
 import UserProfile from '../views/dashboard/app/user-profile';
@@ -41,17 +41,17 @@ import Calender from '../views/dashboard/special-pages/calender';
  
 //admin
 import Admin from '../views/dashboard/admin/admin';
-import Default from '../layouts/dashboard/default';
+import DashboardLayout from '../layouts/dashboard/DashboardLayout';
 
 
 export const DefaultRouter = [
     {
         path: '/',
-        element: <Default />,
+        element: <DashboardLayout />,
         children: [
             {
                 path: 'dashboard',
-                element: <Index />
+                element: <ChatModule />
             },
             {
                 path: 'dashboard/special-pages/billing',
