@@ -31,8 +31,7 @@ import { Button } from '@/components/button'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
+import { Search } from '@/components/search' 
 import AppStack from './AppStack'
 
 export default function Chats() {
@@ -125,7 +124,7 @@ export default function Chats() {
       <Header>
         <Search />
         <div className='ml-auto flex items-center space-x-4'>
-          <ThemeSwitch />
+     
           <ProfileDropdown />
         </div>
       </Header>

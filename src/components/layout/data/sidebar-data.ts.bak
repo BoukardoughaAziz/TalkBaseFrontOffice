@@ -8,9 +8,6 @@ import {
   IconUserCog,
 } from '@tabler/icons-react'
 import { type SidebarData } from '../types'
-import { BarChart3 } from "lucide-react";
-
-
 
 export const sidebarData: SidebarData = {
   navGroups: [
@@ -22,13 +19,6 @@ export const sidebarData: SidebarData = {
           url: '/mainDashboard/chats',
           badge: '3',
           icon: IconMessages,
-        },
-        {
-          title: 'Analytics ',  
-          url: "/mainDashboard/analytics",
-          icon: BarChart3,
-          
-          
         },
       ],
     },

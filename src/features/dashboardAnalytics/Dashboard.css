@@ -1,0 +1,67 @@
+/* Basic container styling */
+.dashboard-container {
+    padding: 20px;
+    background-color: #f4f4f9;
+    min-height: 100vh;
+  }
+  
+  /* Title styling */
+  .title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  /* Date Range Picker section */
+  .date-range-picker {
+    margin-bottom: 30px;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  
+  .date-range-input {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Card styling */
+  .card {
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Stats container grid */
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  
+  /* Stat card styling */
+  .stat-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  /* Chart styling */
+  .chart-container {
+    margin-top: 30px;
+    width: 100%;
+    height: 300px;
+  }
+  
+  .chart-container canvas {
+    max-width: 100% !important;
+    height: auto;
+  }
+  

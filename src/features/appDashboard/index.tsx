@@ -1,7 +1,7 @@
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
 import { SidebarProvider } from '@/components/ui/sidebar'
-import { SearchProvider } from '@/context/search-context'
+ 
 import { cn } from '@/lib/utils'
 import { Outlet } from '@tanstack/react-router'
 import Cookies from 'js-cookie'
@@ -9,7 +9,7 @@ import Cookies from 'js-cookie'
 export default function AppDashboard() {
   const defaultOpen = Cookies.get('sidebar:state') !== 'false'
   return (
-    <SearchProvider>
+  
       <SidebarProvider defaultOpen={defaultOpen}>
         <SkipToMain />
         <AppSidebar />
@@ -26,6 +26,6 @@ export default function AppDashboard() {
           <Outlet />
         </div>
       </SidebarProvider>
-    </SearchProvider>
+ 
   )
 }

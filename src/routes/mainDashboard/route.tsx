@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
-import { SearchProvider } from '@/context/search-context'
+ 
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/mainDashboard')({
 function RouteComponent() {
   const defaultOpen = Cookies.get('sidebar:state') !== 'false'
   return (
-    <SearchProvider>
+   
       <SidebarProvider defaultOpen={defaultOpen}>
         <SkipToMain />
         <AppSidebar />
@@ -41,6 +41,6 @@ function RouteComponent() {
           <Outlet />
         </div>
       </SidebarProvider>
-    </SearchProvider>
+ 
   )
 }

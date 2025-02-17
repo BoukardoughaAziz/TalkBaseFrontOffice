@@ -16,6 +16,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as MainDashboardRouteImport } from './routes/mainDashboard/route'
 import { Route as IndexImport } from './routes/index'
 import { Route as MainDashboardIndexImport } from './routes/mainDashboard/index'
+import { Route as MainDashboardAnalyticsImport } from './routes/mainDashboard/analytics'
 
 // Create Virtual Routes
 
@@ -69,6 +70,12 @@ const MainDashboardSettingsRouteLazyRoute =
   } as any).lazy(() =>
     import('./routes/mainDashboard/settings/route.lazy').then((d) => d.Route),
   )
+
+const MainDashboardAnalyticsRoute = MainDashboardAnalyticsImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => MainDashboardRouteRoute,
+} as any)
 
 const MainDashboardSettingsIndexLazyRoute =
   MainDashboardSettingsIndexLazyImport.update({
@@ -145,6 +152,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/mainDashboard'
       preLoaderRoute: typeof MainDashboardRouteImport
       parentRoute: typeof rootRoute
+    }
+    '/mainDashboard/analytics': {
+      id: '/mainDashboard/analytics'
+      path: '/analytics'
+      fullPath: '/mainDashboard/analytics'
+      preLoaderRoute: typeof MainDashboardAnalyticsImport
+      parentRoute: typeof MainDashboardRouteImport
     }
     '/mainDashboard/settings': {
       id: '/mainDashboard/settings'
@@ -234,12 +248,14 @@ const MainDashboardSettingsRouteLazyRouteWithChildren =
   )
 
 interface MainDashboardRouteRouteChildren {
+  MainDashboardAnalyticsRoute: typeof MainDashboardAnalyticsRoute
   MainDashboardSettingsRouteLazyRoute: typeof MainDashboardSettingsRouteLazyRouteWithChildren
   MainDashboardIndexRoute: typeof MainDashboardIndexRoute
   MainDashboardChatsIndexLazyRoute: typeof MainDashboardChatsIndexLazyRoute
 }
 
 const MainDashboardRouteRouteChildren: MainDashboardRouteRouteChildren = {
+  MainDashboardAnalyticsRoute: MainDashboardAnalyticsRoute,
   MainDashboardSettingsRouteLazyRoute:
     MainDashboardSettingsRouteLazyRouteWithChildren,
   MainDashboardIndexRoute: MainDashboardIndexRoute,
@@ -252,6 +268,7 @@ const MainDashboardRouteRouteWithChildren =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mainDashboard': typeof MainDashboardRouteRouteWithChildren
+  '/mainDashboard/analytics': typeof MainDashboardAnalyticsRoute
   '/mainDashboard/settings': typeof MainDashboardSettingsRouteLazyRouteWithChildren
   '/mainDashboard/': typeof MainDashboardIndexRoute
   '/mainDashboard/settings/account': typeof MainDashboardSettingsAccountLazyRoute
@@ -264,6 +281,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mainDashboard/analytics': typeof MainDashboardAnalyticsRoute
   '/mainDashboard': typeof MainDashboardIndexRoute
   '/mainDashboard/settings/account': typeof MainDashboardSettingsAccountLazyRoute
   '/mainDashboard/settings/appearance': typeof MainDashboardSettingsAppearanceLazyRoute
@@ -277,6 +295,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/mainDashboard': typeof MainDashboardRouteRouteWithChildren
+  '/mainDashboard/analytics': typeof MainDashboardAnalyticsRoute
   '/mainDashboard/settings': typeof MainDashboardSettingsRouteLazyRouteWithChildren
   '/mainDashboard/': typeof MainDashboardIndexRoute
   '/mainDashboard/settings/account': typeof MainDashboardSettingsAccountLazyRoute
@@ -292,6 +311,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/mainDashboard'
+    | '/mainDashboard/analytics'
     | '/mainDashboard/settings'
     | '/mainDashboard/'
     | '/mainDashboard/settings/account'
@@ -303,6 +323,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/mainDashboard/analytics'
     | '/mainDashboard'
     | '/mainDashboard/settings/account'
     | '/mainDashboard/settings/appearance'
@@ -314,6 +335,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/mainDashboard'
+    | '/mainDashboard/analytics'
     | '/mainDashboard/settings'
     | '/mainDashboard/'
     | '/mainDashboard/settings/account'
@@ -355,10 +377,15 @@ export const routeTree = rootRoute
     "/mainDashboard": {
       "filePath": "mainDashboard/route.tsx",
       "children": [
+        "/mainDashboard/analytics",
         "/mainDashboard/settings",
         "/mainDashboard/",
         "/mainDashboard/chats/"
       ]
+    },
+    "/mainDashboard/analytics": {
+      "filePath": "mainDashboard/analytics.tsx",
+      "parent": "/mainDashboard"
     },
     "/mainDashboard/settings": {
       "filePath": "mainDashboard/settings/route.lazy.tsx",
