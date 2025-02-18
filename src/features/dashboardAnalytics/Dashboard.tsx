@@ -11,22 +11,22 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 
 const fetchStats = async () => {
-  const res = await fetch('http://localhost:15000/NwidgetBackend/clients/stats');
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/clients/stats`);
   return res.json();
 };
 
 const fetchWeekly = async () => {
-  const res = await fetch('http://localhost:15000/NwidgetBackend/clients/weekly');
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/clients/weekly`);
   return res.json();
 };
 
 const fetchByCountry = async () => {
-  const res = await fetch('http://localhost:15000/NwidgetBackend/clients/stats');
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/clients/stats`);
   return res.json();
 };
 
 const fetchClientsInRange = async (start, end) => {
-  const res = await fetch(`http://localhost:15000/NwidgetBackend/clients/range?start=${start}&end=${end}`);
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/clients/range?start=${start}&end=${end}`);
   return res.json();
 };
 
@@ -51,9 +51,9 @@ const Dashboard = () => {
 
   
   const [activeFrontUsers, setActiveFrontUsers] = useState(null);
-
+  const socket = useWebSocket()
   useEffect(() => {
-      const socket = io('http://localhost:15000');
+    
 
       socket.on('connect', () => {
           console.log(' WebSocket Connected:', socket.id);

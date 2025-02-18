@@ -1,10 +1,10 @@
-import { RouterProvider, createRouter } from '@tanstack/react-router'
 import ReactDOM from 'react-dom/client'
-import { Provider } from 'react-redux'
+import { RouterProvider, createRouter } from '@tanstack/react-router'
 // Generated Routes
 import { QueryClient, QueryClientProvider } from 'react-query'
+import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
- 
+import { WebSocketProvider } from './context/WebSocketProvider'
 import './index.css'
 import { routeTree } from './routeTree.gen'
 import { persistor, store } from './stores/store'
@@ -15,10 +15,10 @@ const router = createRouter({
   context: { store: store },
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
-});
+})
 
 // Create the QueryClient instance
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -33,16 +33,17 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     // <StrictMode>
-     
-        <Provider store={store}>
-          <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-            {/* Wrap the entire app with QueryClientProvider */}
-            <QueryClientProvider client={queryClient}>
+
+    <Provider store={store}>
+      <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
+        <WebSocketProvider>
+          <QueryClientProvider client={queryClient}>
             <RouterProvider router={router} />
-            </QueryClientProvider>
-          </PersistGate>
-        </Provider>
-   
-    // </StrictMode>    
+          </QueryClientProvider>
+        </WebSocketProvider>
+      </PersistGate>
+    </Provider>
+
+    // </StrictMode>
   )
 }

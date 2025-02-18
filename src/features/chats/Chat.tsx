@@ -33,8 +33,9 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search' 
 import AppStack from './AppStack'
+import { useWebSocket } from '@/context/WebSocketProvider'
 
-export default function Chats() {
+export default function Chat() {
   const currentUserEmail = useSelector((state) => state.currentUserEmail)
   const [search, setSearch] = useState('')
   const [input, setInput] = useState('')
@@ -43,10 +44,8 @@ export default function Chats() {
   >(undefined)
 
   const [conversation, setConversation] = useState(new AppMap())
-
-  const socket = io(import.meta.env.VITE_SOCK_JS_CALL_CENTER_URL, {
-    transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
-  })
+  const socket = useWebSocket()
+ 
   useEffect(() => {
     axios
       .get(
