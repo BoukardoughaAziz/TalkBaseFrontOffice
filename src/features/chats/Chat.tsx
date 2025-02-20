@@ -111,9 +111,7 @@ export default function Chat() {
       }
 
       setConversation(newConversation)
-      console.log(
-        'total Messages ' + conversation.keys.length + '  ' + selectedAppClient
-      )
+       
     })
   }
 

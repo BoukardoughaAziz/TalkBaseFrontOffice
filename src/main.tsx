@@ -17,7 +17,7 @@ const router = createRouter({
   defaultPreloadStaleTime: 0,
 })
 
-// Create the QueryClient instance
+// Create the QueryClient instance 
 const queryClient = new QueryClient()
 
 // Register the router instance for type safety
