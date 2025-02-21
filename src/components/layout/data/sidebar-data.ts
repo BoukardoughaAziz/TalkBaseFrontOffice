@@ -6,6 +6,7 @@ import {
   IconSettings,
   IconTool,
   IconUserCog,
+  IconRobot,
 } from '@tabler/icons-react'
 import { type SidebarData } from '../types'
 import { BarChart3 } from "lucide-react";
@@ -29,6 +30,11 @@ export const sidebarData: SidebarData = {
           icon: BarChart3,
           
           
+        },
+        {
+          title: 'Agent Management',
+          url: '/mainDashboard/agentManagement',
+          icon: IconRobot,
         },
       ],
     },
