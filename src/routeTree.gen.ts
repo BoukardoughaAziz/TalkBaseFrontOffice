@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SignUpImport } from './routes/sign-up'
 import { Route as MainDashboardRouteImport } from './routes/mainDashboard/route'
 import { Route as IndexImport } from './routes/index'
 import { Route as MainDashboardIndexImport } from './routes/mainDashboard/index'
@@ -29,6 +30,9 @@ const MainDashboardSettingsIndexLazyImport = createFileRoute(
 const MainDashboardChatsIndexLazyImport = createFileRoute(
   '/mainDashboard/chats/',
 )()
+const MainDashboardAgentManagementIndexLazyImport = createFileRoute(
+  '/mainDashboard/agentManagement/',
+)()
 const MainDashboardSettingsNotificationsLazyImport = createFileRoute(
   '/mainDashboard/settings/notifications',
 )()
@@ -43,6 +47,12 @@ const MainDashboardSettingsAccountLazyImport = createFileRoute(
 )()
 
 // Create/Update Routes
+
+const SignUpRoute = SignUpImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const MainDashboardRouteRoute = MainDashboardRouteImport.update({
   id: '/mainDashboard',
@@ -93,6 +103,17 @@ const MainDashboardChatsIndexLazyRoute =
     getParentRoute: () => MainDashboardRouteRoute,
   } as any).lazy(() =>
     import('./routes/mainDashboard/chats/index.lazy').then((d) => d.Route),
+  )
+
+const MainDashboardAgentManagementIndexLazyRoute =
+  MainDashboardAgentManagementIndexLazyImport.update({
+    id: '/agentManagement/',
+    path: '/agentManagement/',
+    getParentRoute: () => MainDashboardRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/mainDashboard/agentManagement/index.lazy').then(
+      (d) => d.Route,
+    ),
   )
 
 const MainDashboardSettingsNotificationsLazyRoute =
@@ -153,6 +174,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainDashboardRouteImport
       parentRoute: typeof rootRoute
     }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpImport
+      parentRoute: typeof rootRoute
+    }
     '/mainDashboard/analytics': {
       id: '/mainDashboard/analytics'
       path: '/analytics'
@@ -201,6 +229,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/mainDashboard/settings/notifications'
       preLoaderRoute: typeof MainDashboardSettingsNotificationsLazyImport
       parentRoute: typeof MainDashboardSettingsRouteLazyImport
+    }
+    '/mainDashboard/agentManagement/': {
+      id: '/mainDashboard/agentManagement/'
+      path: '/agentManagement'
+      fullPath: '/mainDashboard/agentManagement'
+      preLoaderRoute: typeof MainDashboardAgentManagementIndexLazyImport
+      parentRoute: typeof MainDashboardRouteImport
     }
     '/mainDashboard/chats/': {
       id: '/mainDashboard/chats/'
@@ -251,6 +286,7 @@ interface MainDashboardRouteRouteChildren {
   MainDashboardAnalyticsRoute: typeof MainDashboardAnalyticsRoute
   MainDashboardSettingsRouteLazyRoute: typeof MainDashboardSettingsRouteLazyRouteWithChildren
   MainDashboardIndexRoute: typeof MainDashboardIndexRoute
+  MainDashboardAgentManagementIndexLazyRoute: typeof MainDashboardAgentManagementIndexLazyRoute
   MainDashboardChatsIndexLazyRoute: typeof MainDashboardChatsIndexLazyRoute
 }
 
@@ -259,6 +295,8 @@ const MainDashboardRouteRouteChildren: MainDashboardRouteRouteChildren = {
   MainDashboardSettingsRouteLazyRoute:
     MainDashboardSettingsRouteLazyRouteWithChildren,
   MainDashboardIndexRoute: MainDashboardIndexRoute,
+  MainDashboardAgentManagementIndexLazyRoute:
+    MainDashboardAgentManagementIndexLazyRoute,
   MainDashboardChatsIndexLazyRoute: MainDashboardChatsIndexLazyRoute,
 }
 
@@ -268,6 +306,7 @@ const MainDashboardRouteRouteWithChildren =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mainDashboard': typeof MainDashboardRouteRouteWithChildren
+  '/sign-up': typeof SignUpRoute
   '/mainDashboard/analytics': typeof MainDashboardAnalyticsRoute
   '/mainDashboard/settings': typeof MainDashboardSettingsRouteLazyRouteWithChildren
   '/mainDashboard/': typeof MainDashboardIndexRoute
@@ -275,18 +314,21 @@ export interface FileRoutesByFullPath {
   '/mainDashboard/settings/appearance': typeof MainDashboardSettingsAppearanceLazyRoute
   '/mainDashboard/settings/display': typeof MainDashboardSettingsDisplayLazyRoute
   '/mainDashboard/settings/notifications': typeof MainDashboardSettingsNotificationsLazyRoute
+  '/mainDashboard/agentManagement': typeof MainDashboardAgentManagementIndexLazyRoute
   '/mainDashboard/chats': typeof MainDashboardChatsIndexLazyRoute
   '/mainDashboard/settings/': typeof MainDashboardSettingsIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/sign-up': typeof SignUpRoute
   '/mainDashboard/analytics': typeof MainDashboardAnalyticsRoute
   '/mainDashboard': typeof MainDashboardIndexRoute
   '/mainDashboard/settings/account': typeof MainDashboardSettingsAccountLazyRoute
   '/mainDashboard/settings/appearance': typeof MainDashboardSettingsAppearanceLazyRoute
   '/mainDashboard/settings/display': typeof MainDashboardSettingsDisplayLazyRoute
   '/mainDashboard/settings/notifications': typeof MainDashboardSettingsNotificationsLazyRoute
+  '/mainDashboard/agentManagement': typeof MainDashboardAgentManagementIndexLazyRoute
   '/mainDashboard/chats': typeof MainDashboardChatsIndexLazyRoute
   '/mainDashboard/settings': typeof MainDashboardSettingsIndexLazyRoute
 }
@@ -295,6 +337,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/mainDashboard': typeof MainDashboardRouteRouteWithChildren
+  '/sign-up': typeof SignUpRoute
   '/mainDashboard/analytics': typeof MainDashboardAnalyticsRoute
   '/mainDashboard/settings': typeof MainDashboardSettingsRouteLazyRouteWithChildren
   '/mainDashboard/': typeof MainDashboardIndexRoute
@@ -302,6 +345,7 @@ export interface FileRoutesById {
   '/mainDashboard/settings/appearance': typeof MainDashboardSettingsAppearanceLazyRoute
   '/mainDashboard/settings/display': typeof MainDashboardSettingsDisplayLazyRoute
   '/mainDashboard/settings/notifications': typeof MainDashboardSettingsNotificationsLazyRoute
+  '/mainDashboard/agentManagement/': typeof MainDashboardAgentManagementIndexLazyRoute
   '/mainDashboard/chats/': typeof MainDashboardChatsIndexLazyRoute
   '/mainDashboard/settings/': typeof MainDashboardSettingsIndexLazyRoute
 }
@@ -311,6 +355,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/mainDashboard'
+    | '/sign-up'
     | '/mainDashboard/analytics'
     | '/mainDashboard/settings'
     | '/mainDashboard/'
@@ -318,23 +363,27 @@ export interface FileRouteTypes {
     | '/mainDashboard/settings/appearance'
     | '/mainDashboard/settings/display'
     | '/mainDashboard/settings/notifications'
+    | '/mainDashboard/agentManagement'
     | '/mainDashboard/chats'
     | '/mainDashboard/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/sign-up'
     | '/mainDashboard/analytics'
     | '/mainDashboard'
     | '/mainDashboard/settings/account'
     | '/mainDashboard/settings/appearance'
     | '/mainDashboard/settings/display'
     | '/mainDashboard/settings/notifications'
+    | '/mainDashboard/agentManagement'
     | '/mainDashboard/chats'
     | '/mainDashboard/settings'
   id:
     | '__root__'
     | '/'
     | '/mainDashboard'
+    | '/sign-up'
     | '/mainDashboard/analytics'
     | '/mainDashboard/settings'
     | '/mainDashboard/'
@@ -342,6 +391,7 @@ export interface FileRouteTypes {
     | '/mainDashboard/settings/appearance'
     | '/mainDashboard/settings/display'
     | '/mainDashboard/settings/notifications'
+    | '/mainDashboard/agentManagement/'
     | '/mainDashboard/chats/'
     | '/mainDashboard/settings/'
   fileRoutesById: FileRoutesById
@@ -350,11 +400,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MainDashboardRouteRoute: typeof MainDashboardRouteRouteWithChildren
+  SignUpRoute: typeof SignUpRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MainDashboardRouteRoute: MainDashboardRouteRouteWithChildren,
+  SignUpRoute: SignUpRoute,
 }
 
 export const routeTree = rootRoute
@@ -368,7 +420,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/mainDashboard"
+        "/mainDashboard",
+        "/sign-up"
       ]
     },
     "/": {
@@ -380,8 +433,12 @@ export const routeTree = rootRoute
         "/mainDashboard/analytics",
         "/mainDashboard/settings",
         "/mainDashboard/",
+        "/mainDashboard/agentManagement/",
         "/mainDashboard/chats/"
       ]
+    },
+    "/sign-up": {
+      "filePath": "sign-up.tsx"
     },
     "/mainDashboard/analytics": {
       "filePath": "mainDashboard/analytics.tsx",
@@ -417,6 +474,10 @@ export const routeTree = rootRoute
     "/mainDashboard/settings/notifications": {
       "filePath": "mainDashboard/settings/notifications.lazy.tsx",
       "parent": "/mainDashboard/settings"
+    },
+    "/mainDashboard/agentManagement/": {
+      "filePath": "mainDashboard/agentManagement/index.lazy.tsx",
+      "parent": "/mainDashboard"
     },
     "/mainDashboard/chats/": {
       "filePath": "mainDashboard/chats/index.lazy.tsx",
