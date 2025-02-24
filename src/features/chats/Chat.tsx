@@ -1,7 +1,28 @@
-import { useEffect, useState } from 'react'
-import { Fragment } from 'react/jsx-runtime'
-import axios from 'axios'
-import { format } from 'date-fns'
+import { AppMap } from '@/components/AppMap'
+import { Button } from '@/components/button'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import { useWebSocket } from '@/context/WebSocketProvider'
+import { cn } from '@/lib/utils'
+import { AppClient } from '@/models/AppClient'
+import ChatDirection from '@/models/ChatDirection'
+import ChatEvent from '@/models/ChatEvent'
+import { ChatMessage } from '@/models/ChatMessage'
+import AppUtil from '@/utils/AppUtil'
 import {
   IconArrowLeft,
   IconDotsVertical,
@@ -15,29 +36,19 @@ import {
   IconSend,
   IconVideo,
 } from '@tabler/icons-react'
-import { AppClient } from '@/models/AppClient'
-import ChatDirection from '@/models/ChatDirection'
-import ChatEvent from '@/models/ChatEvent'
-import { ChatMessage } from '@/models/ChatMessage'
+import axios from 'axios'
+import { format } from 'date-fns'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { io } from 'socket.io-client'
-import { cn } from '@/lib/utils'
-import AppUtil from '@/utils/AppUtil'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { AppMap } from '@/components/AppMap'
-import { Button } from '@/components/button'
-import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search' 
+import { Fragment } from 'react/jsx-runtime'
 import AppStack from './AppStack'
-import { useWebSocket } from '@/context/WebSocketProvider'
+import ClientInformation from './ClientInformation'
+import VideoCall from './VideoCall'
 
 export default function Chat() {
   const currentUserEmail = useSelector((state) => state.currentUserEmail)
   const [search, setSearch] = useState('')
+  const [videoCallStarted, setVideoCallStarted] = useState(false)
   const [input, setInput] = useState('')
   const [selectedAppClient, setSelectedAppClient] = useState<
     AppClient | undefined
@@ -45,7 +56,7 @@ export default function Chat() {
 
   const [conversation, setConversation] = useState(new AppMap())
   const socket = useWebSocket()
- 
+
   useEffect(() => {
     axios
       .get(
@@ -63,7 +74,7 @@ export default function Chat() {
     handleSocket()
   }, [])
 
-  const handleSend = (e) => {     
+  const handleSend = (e) => {
     e.preventDefault()
     if (input.trim()) {
       setInput('')
@@ -72,7 +83,7 @@ export default function Chat() {
         chatEvent: ChatEvent.MessageFromClientToAgent,
         appClient: selectedAppClient,
         message: input.trim(),
-        timestamp:new Date()
+        timestamp: new Date(),
       }
       axios.post(
         import.meta.env.VITE_BACKEND_URL_CALL_CENTER +
@@ -99,7 +110,7 @@ export default function Chat() {
       const chatMessage: ChatMessage = JSON.parse(data)
       const newConversation = new AppMap(conversation)
       let oldMessages: AppStack<ChatMessage> = newConversation.get(
-        chatMessage.appClient 
+        chatMessage.appClient
       )
       if (oldMessages == null) {
         oldMessages = new AppStack()
@@ -111,17 +122,33 @@ export default function Chat() {
       }
 
       setConversation(newConversation)
-       
     })
   }
-
+  const handleClickVideoCall = (e) => {
+    e.preventDefault()
+    setVideoCallStarted(true)
+  }
   return (
     <>
+      <AlertDialog open={videoCallStarted} onOpenChange={setVideoCallStarted}>
+        <AlertDialogContent style={{ width: '100%', height: '60%' }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start Video Call?</AlertDialogTitle>
+          </AlertDialogHeader>
+          <VideoCall></VideoCall>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className='bg-green-500 text-white px-4 py-2 rounded-lg'>
+              Start Call
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* ===== Top Heading ===== */}
       <Header>
         <Search />
         <div className='ml-auto flex items-center space-x-4'>
-     
           <ProfileDropdown />
         </div>
       </Header>
@@ -272,6 +299,7 @@ export default function Chat() {
                     size='icon'
                     variant='ghost'
                     className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
+                    onClick={handleClickVideoCall}
                   >
                     <IconVideo size={22} className='stroke-muted-foreground' />
                   </Button>
@@ -292,7 +320,7 @@ export default function Chat() {
                 </div>
               </div>
             )}
-
+            <ClientInformation></ClientInformation>
             {/* Conversation */}
             <div className='flex flex-1 flex-col gap-2 rounded-md px-4 pb-4 pt-0'>
               <div className='flex size-full flex-1'>
