@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   Button,
   Card,
@@ -85,15 +85,37 @@ const Dashboard = () => {
     () => fetchClientsInRange(startDate, endDate),
     { enabled: false }
   )
+//live
 
-  const [activeFrontUsers, setActiveFrontUsers] = useState(null)
-  const socket = useWebSocket()
-  useEffect(() => {
-    socket.on('UPDATE_TOTAL_NUMBER_OF_LIVE_CLIENTS', (data) => {
-      console.log(' total number of clients is :')
-      setActiveFrontUsers(data.count)
-    })  
-  })
+const [activeFrontUsers, setActiveFrontUsers] = useState(0);
+const latestUsers = useRef(0);
+const socket = useWebSocket();
+const [, forceRender] = useState(0);
+
+useEffect(() => {
+  if (!socket) return;
+
+  const handleUpdateClients = (data) => {
+    const userCount = typeof data === "number" ? data : data?.count;
+    if (userCount !== undefined) {
+      latestUsers.current = userCount;
+      setActiveFrontUsers(userCount);
+      forceRender((prev) => prev + 1);
+    }
+  };
+
+  socket.on("UPDATE_TOTAL_NUMBER_OF_LIVE_CLIENTS", handleUpdateClients);
+
+  return () => {
+    socket.off("UPDATE_TOTAL_NUMBER_OF_LIVE_CLIENTS", handleUpdateClients);
+  };
+}, [socket]);
+
+useEffect(() => {
+  console.log("Live Users Updated:", activeFrontUsers);
+}, [activeFrontUsers]);
+
+
 
   if (statsLoading || weeklyLoading || countryLoading) {
     return <div>Loading...</div>
@@ -135,7 +157,6 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Selection */}
       <div className='w-full md:w-1/3 mb-6'>
         <FormControl fullWidth>
           <InputLabel>View Mode</InputLabel>
@@ -150,7 +171,6 @@ const Dashboard = () => {
         </FormControl>
       </div>
 
-      {/* Live Clients*/}
       {rangeOption === 'live' && (
         <Card className='shadow-lg bg-blue-100 border border-blue-300 mb-6'>
           <CardContent>
@@ -158,7 +178,7 @@ const Dashboard = () => {
               Live Users on Front Widget
             </Typography>
             <Typography variant='h4' className='text-blue-900 font-bold'>
-              {activeFrontUsers}
+            {activeFrontUsers ?? latestUsers.current}
             </Typography>
             <Typography variant='body2' className='text-gray-600'>
               Currently active users on the front widget
@@ -167,7 +187,6 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Date Range Picker  */}
       {rangeOption === 'range' && (
         <div className='flex flex-col space-y-4 mb-6'>
           <div className='flex space-x-4'>
@@ -196,7 +215,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Clients in Selected Range  */}
       {showRangeResults && rangeOption === 'range' && (
         <Card className='mb-6'>
           <CardContent>
@@ -210,7 +228,6 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Weekly Clients Chart */}
       <Card className='mb-6'>
         <CardContent>
           <Typography variant='h6' className='font-semibold'>
@@ -238,7 +255,6 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Clients by Country  */}
       <Card className='mb-6'>
         <CardContent>
           <Typography variant='h6' className='font-semibold mb-4'>
