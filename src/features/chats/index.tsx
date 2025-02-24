@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import axios from 'axios'
 import { format } from 'date-fns'
@@ -35,35 +35,49 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import AppStack from './AppStack'
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL
+
+async function getConversations(callCenterAgentId: string) {
+  try {
+    const response = await axios.get(`${BASE_URL}/api/chat/callcenter/getAllConversations`, {
+      params: { callCenterAgentId },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error getting conversations:', error)
+    throw error
+  }
+}
+
 export default function Chats() {
   const currentUserEmail = useSelector((state) => state.currentUserEmail)
   const [search, setSearch] = useState('')
   const [input, setInput] = useState('')
-  const [selectedAppClient, setSelectedAppClient] = useState<
-    AppClient | undefined
-  >(undefined)
-
+  const [selectedAppClient, setSelectedAppClient] = useState<AppClient | ChatMessage>(undefined)
   const [conversation, setConversation] = useState(new AppMap())
+  const [messages, setMessages] = useState<string[]>([])
 
-  const socket = io(import.meta.env.VITE_SOCK_JS_CALL_CENTER_URL, {
+  const socket = useRef(io(import.meta.env.VITE_SOCK_JS_CALL_CENTER_URL, {
     transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
-  })
+  })).current
+
   useEffect(() => {
-    axios
-      .get(
-        import.meta.env.VITE_BACKEND_URL +
-          '/api/chat/callcenter/getCallCenterDashboard?callCenterAgentEmail=' +
-          currentUserEmail
-      )
-      .then((response) => {
-        const newMap = new Map(Object.entries(response.data))
-        for (var clientMessage in response.data) {
-          // console.log(clientMessage)
-        }
-        // console.log(response)
-      })
+    axios.get(
+      `${BASE_URL}/api/chat/callcenter/getCallCenterDashboard?callCenterAgentEmail=${currentUserEmail}`
+    )
     handleSocket()
-  }, [])
+
+    getConversations(currentUserEmail).then((conversations) => {
+      console.log('Conversations:', conversations)
+    })
+
+    // Cleanup function to remove event listeners
+    return () => {
+      socket.off('getListOfNonTreatedClients')
+      socket.off('MESSAGE_FROM_AGENT_TO_CLIENT')
+      socket.off('MESSAGE_FROM_CLIENT_TO_AGENT')
+    }
+  }, [currentUserEmail, selectedAppClient]) 
 
   const handleSend = (e) => {
     e.preventDefault()
@@ -73,48 +87,65 @@ export default function Chats() {
         chatDirection: ChatDirection.FromClientToAgent,
         chatEvent: ChatEvent.MessageFromClientToAgent,
         appClient: selectedAppClient,
+        appClientIdentifier: selectedAppClient.identifier,
+        date: new Date(),
         message: input.trim(),
       }
       axios.post(
-        import.meta.env.VITE_BACKEND_URL +
-          '/api/chat/addMessageFromAgentToClient',
+        `${BASE_URL}/api/chat/callcenter/addMessageFromAgentToClient`,
         newChatMessage
       )
-      const newConversation = new AppMap(conversation)
-      const appStack: AppStack<unknown> = newConversation.get(selectedAppClient)
-      appStack.push(newChatMessage)
-      setConversation(newConversation)
+      setConversation((prevConversation) => {
+        const newConversation = new AppMap(prevConversation)
+        const appStack: AppStack<unknown> = newConversation.get(selectedAppClient)
+        appStack.push(newChatMessage)
+        newConversation.set(selectedAppClient, appStack)
+        return newConversation
+      })
+      setMessages((prevMessages) => [...prevMessages, newChatMessage.message])
     }
   }
 
   const handleSocket = () => {
-    socket.emit('appAgentConnected', {
-      message: 'zzzzzzzz',
-    })
+    socket.emit('appAgentConnected')
     socket.on('getListOfNonTreatedClients', (data) => {
       console.log('getListOfNonTreatedClients')
-      //  data.map((fruit) => console.log('s'))
     })
-    socket.on('MESSAGE_FROM_CLIENT_TO_AGENT', (data) => {
-      console.log('received something')
-      const chatMessage: ChatMessage = JSON.parse(data)
-      const newConversation = new AppMap(conversation)
-      let oldMessages: AppStack<ChatMessage> = newConversation.get(
-        chatMessage.appClient 
-      )
-      if (oldMessages == null) {
-        oldMessages = new AppStack()
-      }
-      oldMessages.push(chatMessage)
-      newConversation.set(chatMessage.appClient, oldMessages)
-      if (newConversation.entries.length == 0) {
-        setSelectedAppClient(chatMessage.appClient)
-      }
 
-      setConversation(newConversation)
-      console.log(
-        'total Messages ' + conversation.keys.length + '  ' + selectedAppClient
-      )
+    socket.on('MESSAGE_FROM_AGENT_TO_CLIENT', (data) => {
+      console.log('received something from the agent')
+      if (typeof data.message === 'string') {
+        setMessages((prevMessages) => {
+          if (!prevMessages.includes(data.message)) {
+            return [...prevMessages, data.message]
+          }
+          return prevMessages
+        })
+      }
+    })
+
+    socket.on('MESSAGE_FROM_CLIENT_TO_AGENT', (data) => {
+      console.log('received something from a client :  ' + typeof(data.appClient.humanIdentifier))
+      if (typeof data.message === 'string') {
+        setMessages((messages) => [...messages, data.message])
+      }
+      const chatMessage: ChatMessage = data
+      setConversation((prevConversation) => {
+        const newConversation = new AppMap(prevConversation)
+        let oldMessages: AppStack<ChatMessage> = newConversation.get(chatMessage.appClient)
+        if (oldMessages == null) {
+          oldMessages = new AppStack()
+        }
+        // Check if the message already exists
+        if (!oldMessages.getItems().some(msg => msg.identifier === chatMessage.identifier)) {
+          oldMessages.push(chatMessage)
+        }
+        newConversation.set(chatMessage.appClient, oldMessages)
+        if (newConversation.entries.length == 0) {
+          setSelectedAppClient(chatMessage.appClient)
+        }
+        return newConversation
+      })
     })
   }
 
@@ -301,41 +332,30 @@ export default function Chats() {
               <div className='flex size-full flex-1'>
                 <div className='chat-text-container relative -mr-4 flex flex-1 flex-col overflow-y-hidden'>
                   <div className='chat-flex flex h-40 w-full flex-grow flex-col-reverse justify-start gap-4 overflow-y-auto py-2 pb-4 pr-4'>
-                    {conversation
-                      .get(selectedAppClient)
-                      ?.getItems()
-                      ?.filter(
-                        (msg: unknown) =>
-                          msg.message !== undefined &&
-                          msg.message?.trim() !== ''
-                      )
-                      ?.map((msg: unknown) => (
-                        <div key={`${msg.identifier}-${msg.timestamp}`}>
-                          <div
+                    {messages.map((msg, index) => (
+                      <div key={index}>
+                        <div
+                          className={cn(
+                            'chat-box max-w-72 break-words px-3 py-2 shadow-lg',
+                            'self-start rounded-[16px_16px_16px_0] bg-secondary'
+                          )}
+                        >
+                          {msg}{' '}
+                          <span
                             className={cn(
-                              'chat-box max-w-72 break-words px-3 py-2 shadow-lg',
-                              msg.chatDirection === 'FromClientToAgent'
-                                ? 'self-end rounded-[16px_16px_0_16px] bg-primary/85 text-primary-foreground/75'
-                                : 'self-start rounded-[16px_16px_16px_0] bg-secondary'
+                              'mt-1 block text-xs font-light italic text-muted-foreground',
+                              'text-right'
                             )}
                           >
-                            {msg.message}{' '}
-                            <span
-                              className={cn(
-                                'mt-1 block text-xs font-light italic text-muted-foreground',
-                                msg.chatDirection === 'FromClientToAgent' &&
-                                  'text-right'
-                              )}
-                            >
-                              {format(msg.timestamp, 'h:mm a')}
-                            </span>
-                          </div>
+                            {/* Add timestamp if needed */}
+                          </span>
                         </div>
-                      ))}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-              <form className='flex w-full flex-none gap-2'>
+              <form className='flex w-full flex-none gap-2' onSubmit={handleSend}>
                 <div className='flex flex-1 items-center gap-2 rounded-md border border-input px-2 py-1 focus-within:outline-none focus-within:ring-1 focus-within:ring-ring lg:gap-4'>
                   <div className='space-x-1'>
                     <Button
@@ -375,14 +395,15 @@ export default function Chats() {
                       type='text'
                       placeholder='Type your messages...'
                       className='h-8 w-full bg-inherit focus-visible:outline-none'
+                      value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSend(e)}
                     />
                   </label>
                   <Button
                     variant='ghost'
                     size='icon'
                     className='hidden sm:inline-flex'
+                    type='submit'
                   >
                     <IconSend size={20} />
                   </Button>
@@ -390,6 +411,7 @@ export default function Chats() {
                 <Button
                   className='h-full sm:hidden'
                   rightSection={<IconSend size={18} />}
+                  type='submit'
                 >
                   Send
                 </Button>

@@ -7,17 +7,17 @@ import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
 
 export const Route = createFileRoute('/mainDashboard')({
-  beforeLoad: ({ context }) => {
-    const isLoggedIn: boolean = context.store.getState().isLoggedIn
-    if (!isLoggedIn) {
-      throw redirect({
-        to: '/',
-        search: {
-          redirect: location.href,
-        },
-      })   
-    }  
-  },
+  // beforeLoad: ({ context }) => {
+  //   const isLoggedIn: boolean = context.store.getState().isLoggedIn
+  //   if (!isLoggedIn) {
+  //     throw redirect({
+  //       to: '/',
+  //       search: {
+  //         redirect: location.href,
+  //       },
+  //     })   
+  //   }  
+  // },
   component: RouteComponent,
 })
 
