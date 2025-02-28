@@ -38,42 +38,8 @@ export class AppMap<K, V> {
     return this.valueMap.get(key.identifier)
   }
 
-  /**
-   * Check if the map contains the key
-   */
-  // has(key: object): boolean {
-  //   return this.appStack.getItems().some((item) => this.isEqual(item.key, key))
-  // }
-
-  /**
-   * Remove a key-value pair
-   */
-  // delete(key: object): boolean {
-  //   const index = this.appStack
-  //     .getItems()
-  //     .findIndex((item) => this.isEqual(item.key, key))
-  //   if (index !== -1) {
-  //     this.appStack.getItems().splice(index, 1)
-  //     return true
-  //   }
-  //   return false
-  // }
-
-  /**
-   * Get all keys (as objects)
-   */
-  // keys(): object[] {
-  //   return this.appStack.getItems().map((item) => item.key)
-  // }
-
-  /**
-   * Get all values
-   */
-  // values(): V[] {
-  //   return this.appStack.getItems().map((item) => item.value)
-  // }
-
-  /**
-   * Custom equality check (deep equality using lodash)
-   */
+   size()
+   { 
+    return this.valueMap.size;
+   }
 }

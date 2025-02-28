@@ -19,6 +19,7 @@ const store = createStore(
   persistedReducer,
   composeWithDevTools(applyMiddleware()) // Optional: for Redux DevTools
 )
+export type RootState = ReturnType<typeof store.getState>;  // <== Add this line
 
 const persistor = persistStore(store)
 export { persistor, store }

@@ -1,9 +1,21 @@
-import { AppMap } from '@/components/AppMap'
-import { Button } from '@/components/button'
-import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
+import { useEffect, useState } from 'react'
+import { Fragment } from 'react/jsx-runtime'
+import axios from 'axios'
+import {
+  IconArrowLeft,
+  IconDotsVertical,
+  IconEdit,
+  IconMessages,
+  IconPhone,
+  IconSearch,
+  IconVideo,
+} from '@tabler/icons-react'
+import { AppClient } from '@/models/AppClient'
+import { ChatMessage } from '@/models/ChatMessage'
+import { useSelector } from 'react-redux'
+import { cn } from '@/lib/utils'
+import AppUtil from '@/utils/AppUtil'
+import { useWebSocket } from '@/context/WebSocketProvider'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,102 +23,41 @@ import {
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { useWebSocket } from '@/context/WebSocketProvider'
-import { cn } from '@/lib/utils'
-import { AppClient } from '@/models/AppClient'
-import ChatDirection from '@/models/ChatDirection'
-import ChatEvent from '@/models/ChatEvent'
-import { ChatMessage } from '@/models/ChatMessage'
-import AppUtil from '@/utils/AppUtil'
-import {
-  IconArrowLeft,
-  IconDotsVertical,
-  IconEdit,
-  IconMessages,
-  IconPaperclip,
-  IconPhone,
-  IconPhotoPlus,
-  IconPlus,
-  IconSearch,
-  IconSend,
-  IconVideo,
-} from '@tabler/icons-react'
-import axios from 'axios'
-import { format } from 'date-fns'
-import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { Fragment } from 'react/jsx-runtime'
+import { AppMap } from '@/components/AppMap'
+import { Button } from '@/components/button'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+ 
 import AppStack from './AppStack'
-import ClientInformation from './ClientInformation'
+import ChatConversation from './ChatConversation'
 import VideoCall from './VideoCall'
+import { RootState } from '@/stores/store'
 
-export default function Chat() {
-  const currentUserEmail = useSelector((state) => state.currentUserEmail)
+export default function Chat() { 
+  const currentUserEmail = useSelector((state: RootState) => state.currentUserEmail)
   const [search, setSearch] = useState('')
   const [videoCallStarted, setVideoCallStarted] = useState(false)
-  const [input, setInput] = useState('')
+
   const [selectedAppClient, setSelectedAppClient] = useState<
     AppClient | undefined
   >(undefined)
 
   const [conversation, setConversation] = useState(new AppMap())
   const socket = useWebSocket()
-
-  useEffect(() => {
-    axios
-      .get(
-        import.meta.env.VITE_BACKEND_URL +
-          '/api/chat/callcenter/getCallCenterDashboard?callCenterAgentEmail=' +
-          currentUserEmail
-      )
-      .then((response) => {
-        const newMap = new Map(Object.entries(response.data))
-        for (var clientMessage in response.data) {
-          // console.log(clientMessage)
-        }
-        // console.log(response)
-      })
-    handleSocket()
-  }, [])
-
-  const handleSend = (e) => {
-    e.preventDefault()
-    if (input.trim()) {
-      setInput('')
-      let newChatMessage = {
-        chatDirection: ChatDirection.FromClientToAgent,
-        chatEvent: ChatEvent.MessageFromClientToAgent,
-        appClient: selectedAppClient,
-        message: input.trim(),
-        timestamp: new Date(),
-      }
-      axios.post(
-        import.meta.env.VITE_BACKEND_URL_CALL_CENTER +
-          '/addMessageFromAgentToClient',
-        newChatMessage
-      )
-      const newConversation = new AppMap(conversation)
-      const appStack: AppStack<unknown> = newConversation.get(selectedAppClient)
-      appStack.push(newChatMessage)
-      setConversation(newConversation)
-    }
-  }
-
   const handleSocket = () => {
     socket.emit('appAgentConnected', {
       message: 'zzzzzzzz',
     })
     socket.on('getListOfNonTreatedClients', (data) => {
-      console.log('getListOfNonTreatedClients')
       //  data.map((fruit) => console.log('s'))
     })
     socket.on('MESSAGE_FROM_CLIENT_TO_AGENT', (data) => {
-      console.log('received something')
       const chatMessage: ChatMessage = JSON.parse(data)
       const newConversation = new AppMap(conversation)
       let oldMessages: AppStack<ChatMessage> = newConversation.get(
@@ -124,6 +75,22 @@ export default function Chat() {
       setConversation(newConversation)
     })
   }
+  useEffect(() => {
+    axios
+      .get(
+        import.meta.env.VITE_BACKEND_URL +
+          '/api/chat/callcenter/getCallCenterDashboard?callCenterAgentEmail=' +
+          currentUserEmail
+      )
+      .then((response) => {
+        const newMap = new Map(Object.entries(response.data))
+        for (var clientMessage in response.data) {
+          // console.log(clientMessage)
+        }
+        // console.log(response)
+      })
+    handleSocket()
+  }, [])
   const handleClickVideoCall = (e) => {
     e.preventDefault()
     setVideoCallStarted(true)
@@ -147,7 +114,7 @@ export default function Chat() {
       </AlertDialog>
       {/* ===== Top Heading ===== */}
       <Header>
-        <Search />
+         
         <div className='ml-auto flex items-center space-x-4'>
           <ProfileDropdown />
         </div>
@@ -320,106 +287,12 @@ export default function Chat() {
                 </div>
               </div>
             )}
-            <ClientInformation></ClientInformation>
-            {/* Conversation */}
-            <div className='flex flex-1 flex-col gap-2 rounded-md px-4 pb-4 pt-0'>
-              <div className='flex size-full flex-1'>
-                <div className='chat-text-container relative -mr-4 flex flex-1 flex-col overflow-y-hidden'>
-                  <div className='chat-flex flex h-40 w-full flex-grow flex-col-reverse justify-start gap-4 overflow-y-auto py-2 pb-4 pr-4'>
-                    {conversation
-                      .get(selectedAppClient)
-                      ?.getItems()
-                      ?.filter(
-                        (msg: unknown) =>
-                          msg.message !== undefined &&
-                          msg.message?.trim() !== ''
-                      )
-                      ?.map((msg: unknown) => (
-                        <div key={`${msg.identifier}-${msg.timestamp}`}>
-                          <div
-                            className={cn(
-                              'chat-box max-w-72 break-words px-3 py-2 shadow-lg',
-                              msg.chatDirection === 'FromClientToAgent'
-                                ? 'self-end rounded-[16px_16px_0_16px] bg-primary/85 text-primary-foreground/75'
-                                : 'self-start rounded-[16px_16px_16px_0] bg-secondary'
-                            )}
-                          >
-                            {msg.message}{' '}
-                            <span
-                              className={cn(
-                                'mt-1 block text-xs font-light italic text-muted-foreground',
-                                msg.chatDirection === 'FromClientToAgent' &&
-                                  'text-right'
-                              )}
-                            >
-                              {format(msg.timestamp, 'h:mm a')}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-              <form className='flex w-full flex-none gap-2'>
-                <div className='flex flex-1 items-center gap-2 rounded-md border border-input px-2 py-1 focus-within:outline-none focus-within:ring-1 focus-within:ring-ring lg:gap-4'>
-                  <div className='space-x-1'>
-                    <Button
-                      size='icon'
-                      type='button'
-                      variant='ghost'
-                      className='h-8 rounded-md'
-                    >
-                      <IconPlus size={20} className='stroke-muted-foreground' />
-                    </Button>
-                    <Button
-                      size='icon'
-                      type='button'
-                      variant='ghost'
-                      className='hidden h-8 rounded-md lg:inline-flex'
-                    >
-                      <IconPhotoPlus
-                        size={20}
-                        className='stroke-muted-foreground'
-                      />
-                    </Button>
-                    <Button
-                      size='icon'
-                      type='button'
-                      variant='ghost'
-                      className='hidden h-8 rounded-md lg:inline-flex'
-                    >
-                      <IconPaperclip
-                        size={20}
-                        className='stroke-muted-foreground'
-                      />
-                    </Button>
-                  </div>
-                  <label className='flex-1'>
-                    <span className='sr-only'>Chat Text Box</span>
-                    <input
-                      type='text'
-                      placeholder='Type your messages...'
-                      className='h-8 w-full bg-inherit focus-visible:outline-none'
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSend(e)}
-                    />
-                  </label>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    className='hidden sm:inline-flex'
-                  >
-                    <IconSend size={20} />
-                  </Button>
-                </div>
-                <Button
-                  className='h-full sm:hidden'
-                  rightSection={<IconSend size={18} />}
-                >
-                  Send
-                </Button>
-              </form>
-            </div>
+
+            <ChatConversation
+              conversation={conversation}
+              selectedAppClient={selectedAppClient}
+              setConversation={setConversation}
+            ></ChatConversation>
           </div>
         </section>
       </Main>
