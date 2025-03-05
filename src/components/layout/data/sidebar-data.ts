@@ -9,7 +9,8 @@ import {
   IconRobot,
 } from '@tabler/icons-react'
 import { type SidebarData } from '../types'
-import { BarChart3 } from "lucide-react";
+import { BarChart3, BarChart4 } from "lucide-react";
+import { ChartNoAxesCombined } from 'lucide-react';
 
 
 
@@ -31,6 +32,15 @@ export const sidebarData: SidebarData = {
           
           
         },
+        {
+          
+            title: "Statistics",
+            url: "/mainDashboard/statistics",
+            icon :ChartNoAxesCombined,
+          
+          
+        },
+        
         {
           title: 'Agent Management',
           url: '/mainDashboard/agentManagement',
