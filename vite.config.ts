@@ -6,7 +6,12 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 // https://vite.dev/config/
 export default defineConfig({
   server: {
-    port: 55555, // Specify the port here
+    host: '0.0.0.0', // Allow external access
+    port: 55555, // Ensure this is correct
+    cors: true, // Enable CORS
+    headers: {
+      'Access-Control-Allow-Origin': '*', // Allow all origins
+    },
   },
   plugins: [react(), TanStackRouterVite()],
   resolve: {
