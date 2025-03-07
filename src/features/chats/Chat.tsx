@@ -20,7 +20,7 @@ import ChatDirection from '@/models/ChatDirection'
 import ChatEvent from '@/models/ChatEvent'
 import { ChatMessage } from '@/models/ChatMessage'
 import { useSelector } from 'react-redux'
-import { io } from 'socket.io-client'
+ 
 import { cn } from '@/lib/utils'
 import AppUtil from '@/utils/AppUtil'
 import { useWebSocket } from '@/context/WebSocketProvider'
@@ -43,9 +43,9 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import AppStack from './AppStack'
-import VideoCall from './VideoCall'
-import ClientInformation from './ClientInformation'
 import ChatConversation from './ChatConversation'
+import ClientInformation from './ClientInformation'
+import VideoCall from './VideoCall'
 
 export default function Chat() {
   const currentUserEmail = useSelector((state) => state.currentUserEmail)
@@ -108,9 +108,13 @@ export default function Chat() {
   }
 
   const handleSocket = () => {
-    socket.emit('appAgentConnected', {
-      message: 'zzzzzzzz',
+    
+
+    socket.on('CLIENT_START_VIDEO_CALL', (data) => {
+      alert('video call starts'+data) 
     })
+
+
     socket.on('getListOfNonTreatedClients', (data) => {
       console.log('getListOfNonTreatedClients')
       //  data.map((fruit) => console.log('s'))

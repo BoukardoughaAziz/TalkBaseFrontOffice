@@ -12,6 +12,10 @@ export default defineConfig({
     headers: {
       'Access-Control-Allow-Origin': '*', // Allow all origins
     },
+    https: {
+      key: './certificate/key.pem',
+      cert: './certificate/cert.pem'
+    }
   },
   plugins: [react(), TanStackRouterVite()],
   resolve: {
