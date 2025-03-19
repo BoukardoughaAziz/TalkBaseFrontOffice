@@ -1,51 +1,45 @@
-import { useEffect, useState, useRef } from 'react'
-import { Fragment } from 'react/jsx-runtime'
-import axios from 'axios'
-import { format } from 'date-fns'
+import { AppClient } from '@/models/AppClient'
+import ChatDirection from '@/models/ChatDirection'
+import ChatEvent from '@/models/ChatEvent'
+import { ChatMessage } from '@/models/ChatMessage'
 import {
   IconArrowLeft,
   IconDotsVertical,
   IconEdit,
   IconMessages,
-  IconPaperclip,
   IconPhone,
-  IconPhotoPlus,
-  IconPlus,
   IconSearch,
-  IconSend,
-  IconVideo,
+  IconVideo
 } from '@tabler/icons-react'
-import { AppClient } from '@/models/AppClient'
-import ChatDirection from '@/models/ChatDirection'
-import ChatEvent from '@/models/ChatEvent'
-import { ChatMessage } from '@/models/ChatMessage'
+import axios from 'axios'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { Fragment } from 'react/jsx-runtime'
  
-import { cn } from '@/lib/utils'
-import AppUtil from '@/utils/AppUtil'
-import { useWebSocket } from '@/context/WebSocketProvider'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogFooter,
-} from '@/components/ui/alert-dialog'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { AppMap } from '@/components/AppMap'
 import { Button } from '@/components/button'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import { useWebSocket } from '@/context/WebSocketProvider'
+import { cn } from '@/lib/utils'
+import AppUtil from '@/utils/AppUtil'
 import AppStack from './AppStack'
 import ChatConversation from './ChatConversation'
-import ClientInformation from './ClientInformation'
 import VideoCall from './VideoCall'
+import ClientInformationUI from '../ClinetInformation/ClientInformationUI'
 
 export default function Chat() {
   const currentUserEmail = useSelector((state) => state.currentUserEmail)
@@ -238,7 +232,7 @@ export default function Chat() {
                             <div className='flex flex-row ...'>
                               <Avatar>
                                 <AvatarImage
-                                  src='http://purecatamphetamine.github.io/country-flag-icons/3x2/TN.svg'
+                                  src='https://purecatamphetamine.github.io/country-flag-icons/3x2/TN.svg'
                                   alt='avatar'
                                 />
                               </Avatar>
@@ -274,77 +268,81 @@ export default function Chat() {
             </ScrollArea>
           </div>
 
-          {/* Right Side */}
-          <div
-            className={cn(
-              'absolute inset-0 hidden left-full z-50 w-full flex-1 flex-col rounded-md border bg-primary-foreground shadow-sm transition-all duration-200 sm:static sm:z-auto sm:flex',
-              selectedAppClient && 'left-0 flex'
-            )}
-          >
-            {/* Top Part */}
-            {selectedAppClient !== undefined && (
-              <div className='mb-1 flex flex-none justify-between rounded-t-md bg-secondary p-4 shadow-lg'>
-                {/* Left */}
-
-                <div className='flex gap-3'>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='-ml-2 h-full sm:hidden'
-                    onClick={() => setSelectedAppClient(null)}
-                  >
-                    <IconArrowLeft />
-                  </Button>
-                  <div className='flex items-center gap-2 lg:gap-4'>
-                    <Avatar>
-                      <AvatarImage
-                        src='https://avatar.iran.liara.run/public'
-                        alt='avatar'
-                      />
-                    </Avatar>
-                    <div>
-                      <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
-                        {selectedAppClient.humanIdentifier}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right */}
-                <div className='-mr-1 flex items-center gap-1 lg:gap-2'>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
-                    onClick={handleClickVideoCall}
-                  >
-                    <IconVideo size={22} className='stroke-muted-foreground' />
-                  </Button>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
-                  >
-                    <IconPhone size={22} className='stroke-muted-foreground' />
-                  </Button>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6'
-                  >
-                    <IconDotsVertical className='stroke-muted-foreground sm:size-5' />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            <ClientInformation></ClientInformation>
-            <ChatConversation
-              conversation={conversation}
-              selectedAppClient={selectedAppClient}
-              setConversation={setConversation}
-            ></ChatConversation>
+    {/* Right Side */}
+<div
+  className={cn(
+    'absolute right-0 top-0 hidden z-50 w-full flex-1 flex-col rounded-md border bg-primary-foreground shadow-sm transition-all duration-200 sm:static sm:z-auto sm:flex sm:w-auto sm:right-0',
+    selectedAppClient && 'left-0 flex'
+  )}
+>
+  {/* Top Part */}
+  {selectedAppClient !== undefined && (
+    <div className='mb-1 flex flex-none justify-between rounded-t-md bg-secondary p-4 shadow-lg'>
+      {/* Left */}
+      <div className='flex gap-3'>
+        <Button
+          size='icon'
+          variant='ghost'
+          className='-ml-2 h-full sm:hidden'
+          onClick={() => setSelectedAppClient(null)}
+        >
+          <IconArrowLeft />
+        </Button>
+        <div className='flex items-center gap-2 lg:gap-4'>
+          <Avatar>
+            <AvatarImage
+              src='https://avatar.iran.liara.run/public'
+              alt='avatar'
+            />
+          </Avatar>
+          <div>
+            <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
+              {selectedAppClient.humanIdentifier}
+            </span>
           </div>
+        </div>
+      </div>
+
+      {/* Right */}
+      <div className='-mr-1 flex items-center gap-1 lg:gap-2'>
+        <Button
+          size='icon'
+          variant='ghost'
+          className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
+          onClick={handleClickVideoCall}
+        >
+          <IconVideo size={22} className='stroke-muted-foreground' />
+        </Button>
+        <Button
+          size='icon'
+          variant='ghost'
+          className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
+        >
+          <IconPhone size={22} className='stroke-muted-foreground' />
+        </Button>
+        <Button
+          size='icon'
+          variant='ghost'
+          className='h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6'
+        >
+          <IconDotsVertical className='stroke-muted-foreground sm:size-5' />
+        </Button>
+      </div>
+    </div>
+  )}     
+
+  {/* Move ClientInformation to the right */}
+  <div className="flex justify-end w-full">
+  
+    {conversation.size()>0 && <ClientInformationUI></ClientInformationUI>}
+  </div>
+
+  <ChatConversation
+    conversation={conversation}
+    selectedAppClient={selectedAppClient}
+    setConversation={setConversation}
+  />
+</div>
         </section>
       </Main>
     </>

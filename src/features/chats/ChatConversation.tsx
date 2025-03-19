@@ -5,7 +5,7 @@ import ChatEvent from '@/models/ChatEvent'
 import { AppMap } from '@/components/AppMap'
 import AppStack from './AppStack'
 import { format } from 'date-fns'
-import ClientInformation from './ClientInformation'
+ 
 import { IconPaperclip, IconPhotoPlus, IconPlus, IconSend } from '@tabler/icons-react'
 import { Button } from '@/components/button'
 
@@ -75,7 +75,7 @@ export default function ChatConversation(props) {
                 ))}
             </div> 
           </div>
-          {props.conversation.size()>0 && <ClientInformation></ClientInformation>}
+     
         </div>
         <form className='flex w-full flex-none gap-2'>
           <div className='flex flex-1 items-center gap-2 rounded-md border border-input px-2 py-1 focus-within:outline-none focus-within:ring-1 focus-within:ring-ring lg:gap-4'>

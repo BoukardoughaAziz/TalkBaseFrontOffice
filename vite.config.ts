@@ -13,8 +13,8 @@ export default defineConfig({
       'Access-Control-Allow-Origin': '*', // Allow all origins
     },
     https: {
-      key: './certificate/key.pem',
-      cert: './certificate/cert.pem'
+      key: '../certificate3/example.com+5-key.pem',
+      cert: '../certificate3/example.com+5.pem'
     }
   },
   plugins: [react(), TanStackRouterVite()],
