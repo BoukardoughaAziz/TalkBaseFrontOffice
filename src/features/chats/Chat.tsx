@@ -1,45 +1,36 @@
+import { useEffect, useRef, useState } from 'react'
+import axios from 'axios'
+import {
+  IconArrowLeft,
+  IconDotsVertical,
+  IconPhone,
+  IconVideo,
+  IconX,
+} from '@tabler/icons-react'
 import { AppClient } from '@/models/AppClient'
 import ChatDirection from '@/models/ChatDirection'
 import ChatEvent from '@/models/ChatEvent'
 import { ChatMessage } from '@/models/ChatMessage'
-import {
-  IconArrowLeft,
-  IconDotsVertical,
-  IconEdit,
-  IconMessages,
-  IconPhone,
-  IconSearch,
-  IconVideo
-} from '@tabler/icons-react'
-import axios from 'axios'
-import { useEffect, useRef, useState } from 'react'
+import { Phone, Video } from 'lucide-react'
 import { useSelector } from 'react-redux'
-import { Fragment } from 'react/jsx-runtime'
- 
+import { cn } from '@/lib/utils'
+import { useWebSocket } from '@/context/WebSocketProvider'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AppMap } from '@/components/AppMap'
 import { Button } from '@/components/button'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { useWebSocket } from '@/context/WebSocketProvider'
-import { cn } from '@/lib/utils'
-import AppUtil from '@/utils/AppUtil'
 import AppStack from './AppStack'
+import CallStatus from './CallStatus'
+import './Chat.css'
 import ChatConversation from './ChatConversation'
+import ChatLeftSide from './ChatLeftSide'
 import VideoCall from './VideoCall'
-import ClientInformationUI from '../ClinetInformation/ClientInformationUI'
 
 export default function Chat() {
   const currentUserEmail = useSelector((state) => state.currentUserEmail)
@@ -52,7 +43,16 @@ export default function Chat() {
   const [conversation, setConversation] = useState(new AppMap())
   const socket = useWebSocket()
   const messageEndRef = useRef(null)
-  const [videoCallStarted, setVideoCallStarted] = useState(false)
+
+  const [incomingCall, setIncomingCall] = useState({
+    callStatus: CallStatus.INACTIVE,
+    callerName: '',
+    data: null,
+    token: '',
+  })
+
+  // Add this new state for audio
+  const [notificationSound] = useState(new Audio('../../public/notif.wav'))
 
   useEffect(() => {
     axios
@@ -63,9 +63,22 @@ export default function Chat() {
       )
       .then((response) => {
         const newMap = new Map(Object.entries(response.data))
-        for (var clientMessage in response.data) {
-          // console.log(clientMessage)
+        const newConversation = new AppMap()
+        let setSelectedAppClientBoolean = false
+        for (const [key, value] of newMap) {
+          const appClient: AppClient = JSON.parse(key)
+          if (!setSelectedAppClientBoolean) {
+            setSelectedAppClient(appClient)
+            setSelectedAppClientBoolean = true
+          }
+          const chatMessagesAppStack = new AppStack()
+          for (const chatMessage of value) {
+            chatMessagesAppStack.push(chatMessage)
+          }
+
+          newConversation.set(appClient, chatMessagesAppStack)
         }
+        setConversation(newConversation)
         // console.log(response)
       })
     handleSocket()
@@ -102,12 +115,19 @@ export default function Chat() {
   }
 
   const handleSocket = () => {
-    
-
     socket.on('CLIENT_START_VIDEO_CALL', (data) => {
-      alert('video call starts'+data) 
-    })
+      // Play notification sound
+      notificationSound
+        .play()
+        .catch((err) => console.log('Audio playback failed:', err))
 
+      setIncomingCall({
+        callStatus: CallStatus.INCOMING_CALL,
+        callerName: data.clientName,
+        data: data,
+        token: data.token,
+      })
+    })
 
     socket.on('getListOfNonTreatedClients', (data) => {
       console.log('getListOfNonTreatedClients')
@@ -133,25 +153,52 @@ export default function Chat() {
     })
   }
 
-  const handleClickVideoCall = (e) => {
-    e.preventDefault()
-    setVideoCallStarted(true)
+  const acceptIncomingCall = () => {
+    setIncomingCall({
+      callStatus: CallStatus.ACCEPT_CALL,
+      callerName: '',
+      data: null,
+      token: incomingCall.token,
+    })
   }
 
+  const rejectIncomingCall = () => {
+    setIncomingCall({
+      callStatus: CallStatus.REJECT_CALL,
+      callerName: '',
+      data: null,
+      token: '',
+    })
+  }
+  const audioRef = useRef(null)
+
+  useEffect(() => {
+    if (
+      incomingCall.callStatus === CallStatus.INCOMING_CALL &&
+      audioRef.current
+    ) {
+      audioRef.current
+        .play()
+        .catch((e) => console.error('Error playing sound:', e))
+    } else if (
+      !incomingCall.callStatus === CallStatus.INCOMING_CALL &&
+      audioRef.current
+    ) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+    }
+  }, [incomingCall.callStatus])
   return (
     <>
-      <AlertDialog open={videoCallStarted} onOpenChange={setVideoCallStarted}>
-        <AlertDialogContent style={{ width: '100%', height: '60%' }}>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Start Video Call?</AlertDialogTitle>
-          </AlertDialogHeader>
-          <VideoCall></VideoCall>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className='bg-green-500 text-white px-4 py-2 rounded-lg'>
-              Start Call
-            </AlertDialogAction>
-          </AlertDialogFooter>
+      <AlertDialog
+        open={incomingCall.callStatus === CallStatus.ACCEPT_CALL}
+        onOpenChange={(open) => !open && rejectIncomingCall()}
+      >
+        <AlertDialogContent className='calling-overlay'>
+          <AlertDialogTitle>title1</AlertDialogTitle>
+          <div className='calling-content'>
+            <VideoCall token={incomingCall.token} />
+          </div>
         </AlertDialogContent>
       </AlertDialog>
 
@@ -164,185 +211,91 @@ export default function Chat() {
 
       <Main fixed>
         <section className='flex h-full gap-6'>
-          {/* Left Side */}
-          <div className='flex w-full flex-col gap-2 sm:w-56 lg:w-72 2xl:w-80'>
-            <div className='sticky top-0 z-10 -mx-4 bg-background px-4 pb-3 shadow-md sm:static sm:z-auto sm:mx-0 sm:p-0 sm:shadow-none'>
-              <div className='flex items-center justify-between py-2'>
-                <div className='flex gap-2'>
-                  <h1 className='text-2xl font-bold'>Inbox</h1>
-                  <IconMessages size={20} />
+          <ChatLeftSide
+            conversation={conversation}
+            selectedAppClient={selectedAppClient}
+            setSelectedAppClient={setSelectedAppClient}
+          ></ChatLeftSide>
+
+          {/* Right Side */}
+          <div
+            className={cn(
+              'absolute right-0 top-0 hidden z-50 w-full flex-1 flex-col rounded-md border bg-primary-foreground shadow-sm transition-all duration-200 sm:static sm:z-auto sm:flex sm:w-auto sm:right-0',
+              selectedAppClient && 'left-0 flex'
+            )}
+          >
+            {/* Top Part */}
+            {selectedAppClient !== undefined && (
+              <div className='mb-1 flex flex-none justify-between rounded-t-md bg-secondary p-4 shadow-lg'>
+                {/* Left */}
+                <div className='flex gap-3'>
+                  <Button
+                    size='icon'
+                    variant='ghost'
+                    className='-ml-2 h-full sm:hidden'
+                    onClick={() => setSelectedAppClient(null)}
+                  >
+                    <IconArrowLeft />
+                  </Button>
+                  <div className='flex items-center gap-2 lg:gap-4'>
+                    <div>
+                      <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
+                        {selectedAppClient.humanIdentifier}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <Button size='icon' variant='ghost' className='rounded-lg'>
-                  <IconEdit size={24} className='stroke-muted-foreground' />
-                </Button>
+                {/* Right */}
+                <div className='-mr-1 flex items-center gap-1 lg:gap-2'>
+                  {/* Ringtone Audio */}
+                  <audio ref={audioRef} src='/ringtone.mp3' loop />
+
+                  {/* Video Call Button */}
+                  <Button
+                    size='icon'
+                    variant='ghost'
+                    className={cn(
+                      'hidden size-8 rounded-full sm:inline-flex lg:size-10 transition-all',
+                      incomingCall.callStatus === CallStatus.INCOMING_CALL
+                        ? 'animate-wiggle animate-pulse bg-green-500 text-white shadow-lg'
+                        : 'bg-transparent text-muted-foreground'
+                    )}
+                    onClick={acceptIncomingCall}
+                  >
+                    <Video size={22} className='stroke-current' />
+                  </Button>
+
+                  {/* Phone Call Button */}
+                  <Button
+                    size='icon'
+                    variant='ghost'
+                    className={cn(
+                      'hidden size-8 rounded-full sm:inline-flex lg:size-10 transition-all',
+                      incomingCall.callStatus === CallStatus.INCOMING_CALL
+                        ? 'animate-wiggle animate-pulse bg-green-500 text-white shadow-lg'
+                        : 'bg-transparent text-muted-foreground'
+                    )}
+                  >
+                    <Phone size={22} className='stroke-current' />
+                  </Button>
+                  <Button
+                    size='icon'
+                    variant='ghost'
+                    className='h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6'
+                  >
+                    <IconDotsVertical className='stroke-muted-foreground sm:size-5' />
+                  </Button>
+                </div>
               </div>
+            )}
 
-              <label className='flex h-12 w-full items-center space-x-0 rounded-md border border-input pl-2 focus-within:outline-none focus-within:ring-1 focus-within:ring-ring'>
-                <IconSearch size={15} className='mr-2 stroke-slate-500' />
-                <span className='sr-only'>Search</span>
-                <input
-                  type='text'
-                  className='w-full flex-1 bg-inherit text-sm focus-visible:outline-none'
-                  placeholder='Search chat...'
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </label>
-            </div>
-
-            <ScrollArea className='-mx-3 h-full p-3'>
-              {Array.from(conversation.entries()).map(
-                ([appClientIdentifier]) => {
-                  const humanIdentifier = AppUtil.getAppClientByIdentifier(
-                    conversation,
-                    appClientIdentifier
-                  ).humanIdentifier
-
-                  const appClient = AppUtil.getAppClientByIdentifier(
-                    conversation,
-                    appClientIdentifier
-                  )
-
-                  return (
-                    <Fragment key={appClientIdentifier}>
-                      <button
-                        type='button'
-                        className={cn(
-                          `-mx-1 flex w-full rounded-md px-2 py-2 text-left text-sm hover:bg-secondary/75`,
-                          selectedAppClient?.identifier === appClient.identifier
-                            ? 'bg-blue-100'
-                            : 'hover:bg-secondary/75'
-                        )}
-                        onClick={() => {
-                          setSelectedAppClient(appClient)
-                        }}
-                      >
-                        <div className='flex gap-2  '>
-                          <Avatar>
-                            <AvatarImage
-                              src='https://avatar.iran.liara.run/public'
-                              alt='avatar'
-                            />
-                          </Avatar>
-                          <div>
-                            <span className='col-start-2 row-span-2 font-medium'>
-                              {humanIdentifier}
-                            </span>
-                            <div className='flex flex-row ...'>
-                              <Avatar>
-                                <AvatarImage
-                                  src='https://purecatamphetamine.github.io/country-flag-icons/3x2/TN.svg'
-                                  alt='avatar'
-                                />
-                              </Avatar>
-                              <div>
-                                <Avatar>
-                                  <AvatarImage
-                                    src={AppUtil.getClientExplorerUrl(
-                                      appClient?.appBrowser
-                                    )}
-                                    alt='avatar'
-                                  />
-                                </Avatar>
-                              </div>
-                              <div>
-                                <Avatar>
-                                  <AvatarImage
-                                    src={AppUtil.getClientAppOsUrl(
-                                      appClient?.appOS
-                                    )}
-                                    alt='avatar'
-                                  />
-                                </Avatar>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                      <Separator className='my-1' />
-                    </Fragment>
-                  )
-                }
-              )}
-            </ScrollArea>
-          </div>
-
-    {/* Right Side */}
-<div
-  className={cn(
-    'absolute right-0 top-0 hidden z-50 w-full flex-1 flex-col rounded-md border bg-primary-foreground shadow-sm transition-all duration-200 sm:static sm:z-auto sm:flex sm:w-auto sm:right-0',
-    selectedAppClient && 'left-0 flex'
-  )}
->
-  {/* Top Part */}
-  {selectedAppClient !== undefined && (
-    <div className='mb-1 flex flex-none justify-between rounded-t-md bg-secondary p-4 shadow-lg'>
-      {/* Left */}
-      <div className='flex gap-3'>
-        <Button
-          size='icon'
-          variant='ghost'
-          className='-ml-2 h-full sm:hidden'
-          onClick={() => setSelectedAppClient(null)}
-        >
-          <IconArrowLeft />
-        </Button>
-        <div className='flex items-center gap-2 lg:gap-4'>
-          <Avatar>
-            <AvatarImage
-              src='https://avatar.iran.liara.run/public'
-              alt='avatar'
+            <ChatConversation
+              conversation={conversation}
+              selectedAppClient={selectedAppClient}
+              setConversation={setConversation}
             />
-          </Avatar>
-          <div>
-            <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
-              {selectedAppClient.humanIdentifier}
-            </span>
           </div>
-        </div>
-      </div>
-
-      {/* Right */}
-      <div className='-mr-1 flex items-center gap-1 lg:gap-2'>
-        <Button
-          size='icon'
-          variant='ghost'
-          className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
-          onClick={handleClickVideoCall}
-        >
-          <IconVideo size={22} className='stroke-muted-foreground' />
-        </Button>
-        <Button
-          size='icon'
-          variant='ghost'
-          className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
-        >
-          <IconPhone size={22} className='stroke-muted-foreground' />
-        </Button>
-        <Button
-          size='icon'
-          variant='ghost'
-          className='h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6'
-        >
-          <IconDotsVertical className='stroke-muted-foreground sm:size-5' />
-        </Button>
-      </div>
-    </div>
-  )}     
-
-  {/* Move ClientInformation to the right */}
-  <div className="flex justify-end w-full">
-  
-    {conversation.size()>0 && <ClientInformationUI></ClientInformationUI>}
-  </div>
-
-  <ChatConversation
-    conversation={conversation}
-    selectedAppClient={selectedAppClient}
-    setConversation={setConversation}
-  />
-</div>
         </section>
       </Main>
     </>
