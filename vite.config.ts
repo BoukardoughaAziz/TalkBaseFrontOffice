@@ -1,8 +1,7 @@
 import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
-
+ 
 // https://vite.dev/config/
 export default defineConfig({
   server: {
@@ -17,7 +16,7 @@ export default defineConfig({
       cert: '../certificate3/example.com+5.pem'
     }
   },
-  plugins: [react(), TanStackRouterVite()],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
