@@ -1,36 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
-import {
-  IconArrowLeft,
-  IconDotsVertical,
-  IconPhone,
-  IconVideo,
-  IconX,
-} from '@tabler/icons-react'
 import { AppClient } from '@/models/AppClient'
 import ChatDirection from '@/models/ChatDirection'
 import ChatEvent from '@/models/ChatEvent'
 import { ChatMessage } from '@/models/ChatMessage'
-import { Phone, Video } from 'lucide-react'
 import { useSelector } from 'react-redux'
-import { cn } from '@/lib/utils'
 import { useWebSocket } from '@/context/WebSocketProvider'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { AppMap } from '@/components/AppMap'
-import { Button } from '@/components/button'
-import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
+import ClientInformationUI from '../ClinetInformation/ClientInformationUI'
 import AppStack from './AppStack'
 import CallStatus from './CallStatus'
 import './Chat.css'
 import ChatConversation from './ChatConversation'
 import ChatLeftSide from './ChatLeftSide'
-import VideoCall from './VideoCall'
+import ChatHeader from './ChatHeader'
+import ChatFooter from './ChatFooter'
 
 export default function Chat() {
   const currentUserEmail = useSelector((state) => state.currentUserEmail)
@@ -40,7 +24,7 @@ export default function Chat() {
     AppClient | undefined
   >(undefined)
 
-  const [conversation, setConversation] = useState(new AppMap())
+  const [conversation, setConversation] = useState(new AppMap(null))
   const socket = useWebSocket()
   const messageEndRef = useRef(null)
 
@@ -63,7 +47,7 @@ export default function Chat() {
       )
       .then((response) => {
         const newMap = new Map(Object.entries(response.data))
-        const newConversation = new AppMap()
+        const newConversation = new AppMap(null)
         let setSelectedAppClientBoolean = false
         for (const [key, value] of newMap) {
           const appClient: AppClient = JSON.parse(key)
@@ -115,42 +99,44 @@ export default function Chat() {
   }
 
   const handleSocket = () => {
-    socket.on('CLIENT_START_VIDEO_CALL', (data) => {
-      // Play notification sound
-      notificationSound
-        .play()
-        .catch((err) => console.log('Audio playback failed:', err))
+    if (socket) {
+      socket.on('CLIENT_START_VIDEO_CALL', (data) => {
+        // Play notification sound
+        notificationSound
+          .play()
+          .catch((err) => console.log('Audio playback failed:', err))
 
-      setIncomingCall({
-        callStatus: CallStatus.INCOMING_CALL,
-        callerName: data.clientName,
-        data: data,
-        token: data.token,
+        setIncomingCall({
+          callStatus: CallStatus.INCOMING_CALL,
+          callerName: data.clientName,
+          data: data,
+          token: data.token,
+        })
       })
-    })
 
-    socket.on('getListOfNonTreatedClients', (data) => {
-      console.log('getListOfNonTreatedClients')
-      //  data.map((fruit) => console.log('s'))
-    })
-    socket.on('MESSAGE_FROM_CLIENT_TO_AGENT', (data) => {
-      console.log('received something')
-      const chatMessage: ChatMessage = JSON.parse(data)
-      const newConversation = new AppMap(conversation)
-      let oldMessages: AppStack<ChatMessage> = newConversation.get(
-        chatMessage.appClient
-      )
-      if (oldMessages == null) {
-        oldMessages = new AppStack()
-      }
-      oldMessages.push(chatMessage)
-      newConversation.set(chatMessage.appClient, oldMessages)
-      if (newConversation.entries.length == 0) {
-        setSelectedAppClient(chatMessage.appClient)
-      }
+      socket.on('getListOfNonTreatedClients', (data) => {
+        console.log('getListOfNonTreatedClients')
+        //  data.map((fruit) => console.log('s'))
+      })
+      socket.on('MESSAGE_FROM_CLIENT_TO_AGENT', (data) => {
+        console.log('received something')
+        const chatMessage: ChatMessage = JSON.parse(data)
+        const newConversation = new AppMap(conversation)
+        let oldMessages: AppStack<ChatMessage> = newConversation.get(
+          chatMessage.appClient
+        )
+        if (oldMessages == null) {
+          oldMessages = new AppStack()
+        }
+        oldMessages.push(chatMessage)
+        newConversation.set(chatMessage.appClient, oldMessages)
+        if (newConversation.entries.length == 0) {
+          setSelectedAppClient(chatMessage.appClient)
+        }
 
-      setConversation(newConversation)
-    })
+        setConversation(newConversation)
+      })
+    }
   }
 
   const acceptIncomingCall = () => {
@@ -190,114 +176,319 @@ export default function Chat() {
   }, [incomingCall.callStatus])
   return (
     <>
-      <AlertDialog
-        open={incomingCall.callStatus === CallStatus.ACCEPT_CALL}
-        onOpenChange={(open) => !open && rejectIncomingCall()}
-      >
-        <AlertDialogContent className='calling-overlay'>
-          <AlertDialogTitle>title1</AlertDialogTitle>
-          <div className='calling-content'>
-            <VideoCall token={incomingCall.token} />
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+      <div className='hk-pg-wrapper pb-0'>
+        <div className='hk-pg-body py-0'>
+          <div className='chatapp-wrap chatapp-info-active'>
+            <div className='chatapp-content'>
+              <ChatLeftSide
+                conversation={conversation}
+                selectedAppClient={selectedAppClient}
+                setSelectedAppClient={setSelectedAppClient}
+              ></ChatLeftSide>
+              <div className='chatapp-single-chat'>
+              <ChatHeader></ChatHeader>
+                <ChatConversation
+                  conversation={conversation}
+                  selectedAppClient={selectedAppClient}
+                  setConversation={setConversation}
+                ></ChatConversation>
+              
+                <ChatFooter></ChatFooter>
+                <ClientInformationUI></ClientInformationUI>
+              </div>
 
-      {/* ===== Top Heading ===== */}
-      <Header>
-        <div className='ml-auto flex items-center space-x-4'>
-          <ProfileDropdown />
-        </div>
-      </Header>
-
-      <Main fixed>
-        <section className='flex h-full gap-6'>
-          <ChatLeftSide
-            conversation={conversation}
-            selectedAppClient={selectedAppClient}
-            setSelectedAppClient={setSelectedAppClient}
-          ></ChatLeftSide>
-
-          {/* Right Side */}
-          <div
-            className={cn(
-              'absolute right-0 top-0 hidden z-50 w-full flex-1 flex-col rounded-md border bg-primary-foreground shadow-sm transition-all duration-200 sm:static sm:z-auto sm:flex sm:w-auto sm:right-0',
-              selectedAppClient && 'left-0 flex'
-            )}
-          >
-            {/* Top Part */}
-            {selectedAppClient !== undefined && (
-              <div className='mb-1 flex flex-none justify-between rounded-t-md bg-secondary p-4 shadow-lg'>
-                {/* Left */}
-                <div className='flex gap-3'>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='-ml-2 h-full sm:hidden'
-                    onClick={() => setSelectedAppClient(null)}
-                  >
-                    <IconArrowLeft />
-                  </Button>
-                  <div className='flex items-center gap-2 lg:gap-4'>
-                    <div>
-                      <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
-                        {selectedAppClient.humanIdentifier}
-                      </span>
+              <div
+                id='audio_call'
+                className='modal fade'
+                tabIndex={-1}
+                role='dialog'
+                aria-hidden='true'
+              >
+                <div
+                  className='modal-dialog modal-dialog-centered modal-xl chatapp-call-window'
+                  role='document'
+                >
+                  <div className='modal-content'>
+                    <div className='modal-header header-wth-bg'>
+                      <h6 className='modal-title text-muted'>
+                        Jampack Audio Call
+                      </h6>
+                      <div className='modal-action'>
+                        <a
+                          href='#'
+                          className='btn btn-xs btn-icon btn-flush-dark btn-rounded flush-soft-hover modal-fullscreen-togglable'
+                        >
+                          <span className='icon'>
+                            <span className='feather-icon'>
+                              <i data-feather='maximize'></i>
+                            </span>
+                            <span className='feather-icon d-none'>
+                              <i data-feather='minimize'></i>
+                            </span>
+                          </span>
+                        </a>
+                        <a
+                          href='#'
+                          className='btn btn-xs btn-icon btn-flush-dark btn-rounded flush-soft-hover'
+                        >
+                          <span className='icon'>
+                            <span className='feather-icon'>
+                              <i data-feather='help-circle'></i>
+                            </span>
+                          </span>
+                        </a>
+                      </div>
+                    </div>
+                    <div className='modal-body'>
+                      <div className='avatar avatar-xxxl avatar-rounded d-20'>
+                        <img
+                          src='../assets/img/avatar8.jpg'
+                          alt='user'
+                          className='avatar-img'
+                        />
+                      </div>
+                      <h3 className='mt-3'>Huma Therman</h3>
+                      <p>
+                        Audio Calling<span className='one'>.</span>
+                        <span className='two'>.</span>
+                        <span className='three'>.</span>
+                      </p>
+                    </div>
+                    <div className='modal-footer'>
+                      <ul className='chatapp-call-action hk-list'>
+                        <li>
+                          <button className='btn btn-icon btn-lg btn-rounded btn-soft-light'>
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='mic'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                        <li>
+                          <button className='btn btn-icon btn-lg btn-rounded btn-soft-light'>
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='video'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            className='btn btn-icon btn-lg btn-rounded btn-danger'
+                            data-bs-dismiss='modal'
+                          >
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='phone'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                        <li>
+                          <button className='btn btn-icon btn-lg btn-rounded btn-soft-light'>
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='user-plus'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                        <li>
+                          <button className='btn btn-icon btn-lg btn-rounded btn-soft-light'>
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='more-vertical'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                      </ul>
+                      <div className='avatar avatar-lg avatar-rounded chatapp-caller-img'>
+                        <img
+                          src='../assets/img/avatar13.jpg'
+                          alt='user'
+                          className='avatar-img'
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Right */}
-                <div className='-mr-1 flex items-center gap-1 lg:gap-2'>
-                  {/* Ringtone Audio */}
-                  <audio ref={audioRef} src='/ringtone.mp3' loop />
-
-                  {/* Video Call Button */}
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className={cn(
-                      'hidden size-8 rounded-full sm:inline-flex lg:size-10 transition-all',
-                      incomingCall.callStatus === CallStatus.INCOMING_CALL
-                        ? 'animate-wiggle animate-pulse bg-green-500 text-white shadow-lg'
-                        : 'bg-transparent text-muted-foreground'
-                    )}
-                    onClick={acceptIncomingCall}
-                  >
-                    <Video size={22} className='stroke-current' />
-                  </Button>
-
-                  {/* Phone Call Button */}
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className={cn(
-                      'hidden size-8 rounded-full sm:inline-flex lg:size-10 transition-all',
-                      incomingCall.callStatus === CallStatus.INCOMING_CALL
-                        ? 'animate-wiggle animate-pulse bg-green-500 text-white shadow-lg'
-                        : 'bg-transparent text-muted-foreground'
-                    )}
-                  >
-                    <Phone size={22} className='stroke-current' />
-                  </Button>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6'
-                  >
-                    <IconDotsVertical className='stroke-muted-foreground sm:size-5' />
-                  </Button>
+              </div>
+              <div
+                id='video_call'
+                className='modal fade'
+                tabIndex={-1}
+                role='dialog'
+                aria-hidden='true'
+              >
+                <div
+                  className='modal-dialog modal-dialog-centered modal-xl chatapp-call-window'
+                  role='document'
+                >
+                  <div className='modal-content bg-primary-dark-5'>
+                    <div className='modal-header header-wth-bg bg-primary-dark-3'>
+                      <h6 className='modal-title text-muted'>
+                        Jampack Video Call
+                      </h6>
+                      <div className='modal-action'>
+                        <a
+                          href='#'
+                          className='btn btn-xs btn-icon btn-rounded btn-link link-secondary modal-fullscreen-togglable'
+                        >
+                          <span className='icon'>
+                            <span className='feather-icon'>
+                              <i data-feather='maximize'></i>
+                            </span>
+                            <span className='feather-icon d-none'>
+                              <i data-feather='minimize'></i>
+                            </span>
+                          </span>
+                        </a>
+                        <a
+                          href='#'
+                          className='btn btn-xs btn-icon btn-rounded btn-link link-secondary'
+                        >
+                          <span className='icon'>
+                            <span className='feather-icon'>
+                              <i data-feather='help-circle'></i>
+                            </span>
+                          </span>
+                        </a>
+                      </div>
+                    </div>
+                    <div className='modal-body'>
+                      <div className='avatar avatar-xxxl avatar-rounded d-20'>
+                        <img
+                          src='../assets/img/avatar8.jpg'
+                          alt='user'
+                          className='avatar-img'
+                        />
+                      </div>
+                      <h3 className='text-white mt-3'>Huma Therman</h3>
+                      <p className='text-white'>
+                        Video Calling<span className='one'>.</span>
+                        <span className='two'>.</span>
+                        <span className='three'>.</span>
+                      </p>
+                    </div>
+                    <div className='modal-footer'>
+                      <ul className='chatapp-call-action hk-list'>
+                        <li>
+                          <button className='btn btn-icon btn-lg btn-rounded btn-dark'>
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='mic'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                        <li>
+                          <button className='btn btn-icon btn-lg btn-rounded btn-dark'>
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='video'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            className='btn btn-icon btn-lg btn-rounded btn-danger'
+                            data-bs-dismiss='modal'
+                          >
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='phone'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                        <li>
+                          <button className='btn btn-icon btn-lg btn-rounded btn-dark'>
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='user-plus'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                        <li>
+                          <button className='btn btn-icon btn-lg btn-rounded btn-dark'>
+                            <span className='icon'>
+                              <span className='feather-icon'>
+                                <i data-feather='more-vertical'></i>
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                      </ul>
+                      <div className='avatar avatar-lg avatar-rounded chatapp-caller-img'>
+                        <img
+                          src='../assets/img/avatar13.jpg'
+                          alt='user'
+                          className='avatar-img'
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
 
-            <ChatConversation
-              conversation={conversation}
-              selectedAppClient={selectedAppClient}
-              setConversation={setConversation}
-            />
+              <div
+                className='modal fade'
+                id='invite_people'
+                tabIndex={-1}
+                role='dialog'
+              >
+                <div
+                  className='modal-dialog modal-dialog-centered mw-400p'
+                  role='document'
+                >
+                  <div className='modal-content'>
+                    <div className='modal-header header-wth-bg-inv'>
+                      <h5 className='modal-title'>Invite People</h5>
+                      <button
+                        type='button'
+                        className='btn-close text-white'
+                        data-bs-dismiss='modal'
+                        aria-label='Close'
+                      >
+                        <span aria-hidden='true'>×</span>
+                      </button>
+                    </div>
+                    <div className='modal-body p-0'>
+                      <form className='m-3' role='search'>
+                        <input
+                          type='text'
+                          className='form-control rounded-input user-search'
+                          placeholder='Search People'
+                        />
+                      </form>
+                    </div>
+                    <div className='modal-footer justify-content-center'>
+                      <button
+                        type='button'
+                        className='btn flex-fill btn-light flex-1'
+                        data-bs-dismiss='modal'
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type='button'
+                        className='btn flex-fill btn-primary flex-1'
+                      >
+                        Invite for chat
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </section>
-      </Main>
+        </div>
+      </div>
     </>
   )
 }
