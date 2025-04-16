@@ -29,13 +29,9 @@ export default function AppDashboard() {
               <a className='navbar-brand' href='index.html'>
                 <img
                   className='brand-img img-fluid'
-                  src='../assets/img/brand-sm.svg'
+                  src='public/images/logo2.png'
                   alt='brand'
-                />
-                <img
-                  className='brand-img img-fluid'
-                  src='../assets/img/Jampack.svg'
-                  alt='brand'
+                  style={{ width:"200px", height: "80px" }} 
                 />
               </a>
               <button className='btn btn-icon btn-rounded btn-flush-dark flush-soft-hover navbar-toggle'>

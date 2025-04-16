@@ -3,6 +3,7 @@ import AppStack from "./AppStack"
 import { useState } from "react"
 import ChatDirection from "@/models/ChatDirection"
 import ChatEvent from "@/models/ChatEvent"
+import { AppMap } from "@/components/AppMap"
 
 export default function ChatFooter(props) {
   const [input, setInput] = useState('')

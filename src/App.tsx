@@ -1,20 +1,26 @@
 import { Route, Routes } from 'react-router-dom'
-import routesConfig from './RoutesConfig.js'
+import routesConfig, { authRoutes } from './RoutesConfig.js'
 import './assets/css/style.css'
 import './assets/js/dropdown-bootstrap-extended.js'
 import AppDashboard from './pages/AppDashboard.js'
 import SignIn from './pages/auth/SignIn'
+import SignUp from './pages/auth/SignUp'
 import Chat from './pages/chats/Chat.js'
+import AgentManagement from './pages/agents/AgentManagement'
+
 export const ALL_COMPONENTS = {
   AppDashboard: { name: AppDashboard, value: <AppDashboard /> },
   Chat: { name: Chat, value: <Chat /> },
+  SignUp: { name: SignUp, value: <SignUp /> },
+  SignIn: { name: SignIn, value: <SignIn /> },
+  AgentManagement: { name: AgentManagement, value: <AgentManagement /> },
 };
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<SignIn />} />
-      {routesConfig.map(({ path, component }) => {
+      {[...routesConfig, ...authRoutes].map(({ path, component }) => {
         const ComponentData = ALL_COMPONENTS[component]; // Get component object
 
         if (!ComponentData) {

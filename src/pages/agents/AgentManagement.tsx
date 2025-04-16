@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { Button } from '@/components/button'
-import { Card } from '@/components/ui/card'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 
 export default function AgentManagement() {
   const [agents, setAgents] = useState([])
@@ -43,44 +39,69 @@ export default function AgentManagement() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold">Agent Management</h2>
-        <p className="text-muted-foreground">Approve or revoke agent access</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {agents.map((agent) => (
-          <Card key={agent._id} className="p-4">
-            <div className="flex items-center space-x-4">
-              <Avatar>
-                <AvatarImage
-                  src={`https://avatar.iran.liara.run/public/${agent._id}`}
-                  alt={`${agent.firstname} ${agent.lastname}`}
-                />
-              </Avatar>
-              <div className="flex-1">
-                <h3 className="font-medium">
-                  {agent.firstname} {agent.lastname}
-                </h3>
-                <p className="text-sm text-muted-foreground">{agent.email}</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <Badge variant={agent.isApproved ? "default" : "secondary"}>
-                    {agent.isApproved ? 'Approved' : 'Pending'}
-                  </Badge>
-                  <Badge variant="outline">{agent.type}</Badge>
+    <div className="hk-wrapper">
+      <div className="hk-pg-wrapper">
+        <div className="hk-pg-body">
+          <div className="container-xxl">
+            <div className="row">
+              <div className="col-xl-10 col-lg-10 col-md-10 col-sm-10 position-relative mx-auto">
+                <div className="auth-content py-md-0 py-8">
+                  <div className="row">
+                    <div className="col-lg-12 mx-auto">
+                      <h4 className="mb-4">Agent Management</h4>
+                      <div className="table-responsive">
+                        <table className="table table-hover">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th>Email</th>
+                              <th>Type</th>
+                              <th>Status</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {agents.map((agent) => (
+                              <tr key={agent._id}>
+                                <td>
+                                  <div className="d-flex align-items-center">
+                                    <img
+                                      src={`https://avatar.iran.liara.run/public/${agent._id}`}
+                                      alt={`${agent.firstname} ${agent.lastname}`}
+                                      className="rounded-circle me-2"
+                                      width="32"
+                                      height="32"
+                                    />
+                                    <span>{agent.firstname} {agent.lastname}</span>
+                                  </div>
+                                </td>
+                                <td>{agent.email}</td>
+                                <td>{agent.type}</td>
+                                <td>
+                                  <span className={`badge ${agent.isApproved ? 'bg-success' : 'bg-warning'}`}>
+                                    {agent.isApproved ? 'Approved' : 'Pending'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <button
+                                    className={`btn btn-sm ${agent.isApproved ? 'btn-danger' : 'btn-primary'}`}
+                                    onClick={() => handleApproveAgent(agent._id)}
+                                  >
+                                    {agent.isApproved ? 'Revoke' : 'Approve'}
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <Button
-                onClick={() => handleApproveAgent(agent._id)}
-                variant={agent.isApproved ? "destructive" : "default"}
-                size="sm"
-              >
-                {agent.isApproved ? 'Revoke' : 'Approve'}
-              </Button>
             </div>
-          </Card>
-        ))}
+          </div>
+        </div>
       </div>
     </div>
   )

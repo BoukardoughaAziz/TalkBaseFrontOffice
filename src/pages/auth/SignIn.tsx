@@ -71,120 +71,100 @@ export default function SignIn() {
 
   return (
     <div className="hk-wrapper hk-pg-auth" data-footer="simple">
-      <nav className="hk-navbar navbar navbar-expand-xl navbar-light fixed-top">
-        <div className="container-xxl">
-          <div className="nav-start-wrap">
-            <a className="navbar-brand" href="/">
-              <img
-                className="brand-img d-inline-block"
-                src="dist/img/logo-light.png"
-                alt="brand"
-              />
-            </a>
-          </div>
-
-          <div className="nav-end-wrap">
-            <ul className="navbar-nav flex-row">
-              <li className="nav-item nav-link py-0">
-                <button className="btn btn-sm btn-outline-light">
-                  <span>
-                    <span className="icon">
-                      <span className="feather-icon">
-                        <i data-feather="help-circle"></i>
-                      </span>
-                    </span>
-                    <span>Get Help</span>
-                  </span>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-
-      <div className="hk-pg-wrapper">
-        <div className="hk-pg-body">
+      <div className="hk-pg-wrapper pt-0 pb-xl-0 pb-5">
+        <div className="hk-pg-body pt-0 pb-xl-0">
           <div className="container-xxl">
             <div className="row">
-              <div className="col-xl-5 col-lg-6 col-md-7 col-sm-10 position-relative mx-auto">
-                <div className="auth-content py-md-0 py-8">
+              <div className="col-sm-10 position-relative mx-auto">
+                <div className="auth-content py-8">
                   <form className="w-100" onSubmit={handleSubmit(onSubmit)}>
                     <div className="row">
-                      <div className="col-lg-10 mx-auto">
-                        <h4 className="mb-4">Sign in to your account</h4>
-
-                        {/* Email Field */}
-                        <div className="form-group">
-                          <label>Email</label>
-                          <input
-                            className="form-control"
-                            placeholder="Enter email"
-                            type="text"
-                            {...register("email")}
-                          />
-                          {errors.email && (
-                            <p className="text-danger">{errors.email.message}</p>
-                          )}
-                        </div>
-
-                        {/* Password Field */}
-                        <div className="form-group">
-                          <label>Password</label>
-                          <a href="#" className="fs-7 fw-medium">
-                            Forgot Password?
-                          </a>
-                          <div className="input-group password-check">
-                            <span className="input-affix-wrapper">
-                              <input
-                                className="form-control"
-                                placeholder="Enter your password"
-                                type="password"
-                                {...register("password")}
-                              />
-                              {errors.password && (
-                                <p className="text-danger">
-                                  {errors.password.message}
-                                </p>
-                              )}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Remember Me Checkbox */}
-                        <div className="d-flex justify-content-center">
-                          <div className="form-check form-check-sm mb-3">
-                            <input
-                              type="checkbox"
-                              className="form-check-input"
-                              id="logged_in"
+                      <div className="col-lg-5 col-md-7 col-sm-10 mx-auto">
+                        <div className="text-center mb-7">
+                          <a className="navbar-brand me-0" href="/">
+                            <img
+                              className="brand-img d-inline-block"
+                              src="public/images/logo2.png"
+                              alt="brand"
+                              style={{ height: "100px", width: "100px" }}
                             />
-                            <label
-                              className="form-check-label text-muted fs-6"
-                              htmlFor="logged_in"
+                          </a>
+                        </div>
+                        <div className="card card-lg card-border">
+                          <div className="card-body">
+                            <h4 className="mb-4 text-center">Sign in to your account</h4>
+                            <div className="row gx-3">
+                              <div className="form-group col-lg-12">
+                                <div className="form-label-group">
+                                  <label>Email</label>
+                                </div>
+                                <input
+                                  className="form-control"
+                                  placeholder="Enter email"
+                                  type="text"
+                                  {...register("email")}
+                                />
+                                {errors.email && (
+                                  <p className="text-danger">{errors.email.message}</p>
+                                )}
+                              </div>
+                              <div className="form-group col-lg-12">
+                                <div className="form-label-group">
+                                  <label>Password</label>
+                                  <a href="#" className="fs-7 fw-medium">Forgot Password?</a>
+                                </div>
+                                <div className="input-group password-check">
+                                  <span className="input-affix-wrapper">
+                                    <input
+                                      className="form-control"
+                                      placeholder="Enter your password"
+                                      type="password"
+                                      {...register("password")}
+                                    />
+                                  </span>
+                                </div>
+                                {errors.password && (
+                                  <p className="text-danger">{errors.password.message}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="d-flex justify-content-center">
+                              <div className="form-check form-check-sm mb-3">
+                                <input
+                                  type="checkbox"
+                                  className="form-check-input"
+                                  id="logged_in"
+                                />
+                                <label
+                                  className="form-check-label text-muted fs-7"
+                                  htmlFor="logged_in"
+                                >
+                                  Keep me logged in
+                                </label>
+                              </div>
+                            </div>
+                            <button
+                              type="submit"
+                              className="btn btn-primary btn-uppercase btn-block"
+                              disabled={isLoading}
                             >
-                              Keep me logged in
-                            </label>
+                              {isLoading ? "Signing in..." : "Login"}
+                            </button>
+                            {error && <p className="text-danger mt-2">{error}</p>}
+                            <p className="p-xs mt-2 text-center">
+                              New to Nwidget?{" "}
+                              <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  navigate("/sign-up");
+                                }}
+                              >
+                                <u>Create new account</u>
+                              </a>
+                            </p>
                           </div>
                         </div>
-
-                        {/* Submit Button */}
-                        <button
-                          type="submit"
-                          className="btn btn-primary btn-uppercase btn-block"
-                          disabled={isLoading}
-                        >
-                          {isLoading ? "Signing in..." : "Login"}
-                        </button>
-
-                        {/* Error Message */}
-                        {error && <p className="text-danger mt-2">{error}</p>}
-
-                        <p className="p-xs mt-2 text-center">
-                          New to Jampack?{" "}
-                          <a href="#">
-                            <u>Create new account</u>
-                          </a>
-                        </p>
                       </div>
                     </div>
                   </form>
@@ -194,28 +174,22 @@ export default function SignIn() {
           </div>
         </div>
 
-        <footer className="container-xxl footer">
-          <div className="row">
-            <div className="col-xl-8">
-              <p className="footer-text">
-                <span className="copy-text">Jampack © 2022 All rights reserved.</span>{" "}
-                <a href="#">Privacy Policy</a>
-                <span className="footer-link-sep">|</span>
-                <a href="#">T&C</a>
-                <span className="footer-link-sep">|</span>
-                <a href="#">System Status</a>
-              </p>
+        <div className="hk-footer border-0">
+          <footer className="container-xxl footer">
+            <div className="row">
+              <div className="col-xl-8 text-center">
+                <p className="footer-text pb-0">
+                  <span className="copy-text">Nwidget All rights reserved.</span>{" "}
+                  <a href="#" className="" target="_blank">Privacy Policy</a>
+                  <span className="footer-link-sep">|</span>
+                  <a href="#" className="" target="_blank">T&C</a>
+                  <span className="footer-link-sep">|</span>
+                  <a href="#" className="" target="_blank">System Status</a>
+                </p>
+              </div>
             </div>
-            <div className="col-xl-4">
-              <a href="#" className="footer-extr-link link-default">
-                <span className="feather-icon">
-                  <i data-feather="external-link"></i>
-                </span>
-                <u>Send feedback to our help forum</u>
-              </a>
-            </div>
-          </div>
-        </footer>
+          </footer>
+        </div>
       </div>
     </div>
   );
