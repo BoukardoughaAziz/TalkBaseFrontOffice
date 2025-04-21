@@ -5,33 +5,49 @@ import ChatDirection from "@/models/ChatDirection"
 import ChatEvent from "@/models/ChatEvent"
 import { AppMap } from "@/components/AppMap"
 
-export default function ChatFooter(props) {
+interface ChatFooterProps {
+  conversation: AppMap;
+  selectedAppClient: any;
+  setConversation: (conversation: AppMap) => void;
+}
+
+export default function ChatFooter({ conversation, selectedAppClient, setConversation }: ChatFooterProps) {
   const [input, setInput] = useState('')
 
   const handleSendChatMessage = (e) => {
     e.preventDefault()
-    if (input.trim()) {
+    if (input.trim() && selectedAppClient) {
       setInput('')
       const newChatMessage = {
-        chatDirection: ChatDirection.FromClientToAgent,
-        chatEvent: ChatEvent.MessageFromClientToAgent,
-        appClient: props.selectedAppClient,
+        chatDirection: ChatDirection.FromAgentToCLient,
+        chatEvent: ChatEvent.MessageFromAgentToClient,
+        appClient: selectedAppClient,
         message: input.trim(),
         timestamp: new Date(),
       }
+      
+      // Send message to backend
       axios.post(
         import.meta.env.VITE_BACKEND_URL_CALL_CENTER +
           '/addMessageFromAgentToClient',
         newChatMessage
       )
-      const newConversation = new AppMap(props.conversation)
-      const appStack: AppStack<unknown> = newConversation.get(
-        props.selectedAppClient
-      )
+
+      // Update local state
+      const newConversation = new AppMap(conversation)
+      let appStack = newConversation.get(selectedAppClient)
+      
+      // If no conversation exists for this client yet, create a new one
+      if (!appStack) {
+        appStack = new AppStack()
+        newConversation.set(selectedAppClient, appStack)
+      }
+      
       appStack.push(newChatMessage)
-      props.setConversation(newConversation)
+      setConversation(newConversation)
     }
   }
+
   return (
     <>
       <footer className='chat-footer'>
@@ -110,7 +126,10 @@ export default function ChatFooter(props) {
               onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage(e)}
             />
             <span className='input-suffix'>
-              <button className='btn btn-icon btn-flush-primary btn-rounded btn-send'>
+              <button 
+                className='btn btn-icon btn-flush-primary btn-rounded btn-send'
+                onClick={handleSendChatMessage}
+              >
                 <span className='icon'>
                   <span className='feather-icon'>
                     <i data-feather='arrow-right'></i>

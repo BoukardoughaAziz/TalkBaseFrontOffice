@@ -121,20 +121,21 @@ export default function Chat() {
       socket.on('MESSAGE_FROM_CLIENT_TO_AGENT', (data) => {
         console.log('received something')
         const chatMessage: ChatMessage = JSON.parse(data)
-        const newConversation = new AppMap(conversation)
-        let oldMessages: AppStack<ChatMessage> = newConversation.get(
-          chatMessage.appClient
-        )
-        if (oldMessages == null) {
-          oldMessages = new AppStack()
-        }
-        oldMessages.push(chatMessage)
-        newConversation.set(chatMessage.appClient, oldMessages)
-        if (newConversation.entries.length == 0) {
-          setSelectedAppClient(chatMessage.appClient)
-        }
-
-        setConversation(newConversation)
+        setConversation((prevConversation) => {
+          const newConversation = new AppMap(prevConversation)
+          let oldMessages: AppStack<ChatMessage> = newConversation.get(
+            chatMessage.appClient
+          )
+          if (oldMessages == null) {
+            oldMessages = new AppStack()
+          }
+          oldMessages.push(chatMessage)
+          newConversation.set(chatMessage.appClient, oldMessages)
+          if (newConversation.entries.length === 0) {
+            setSelectedAppClient(chatMessage.appClient)
+          }
+          return newConversation
+        })
       })
     }
   }
@@ -193,7 +194,11 @@ export default function Chat() {
                   setConversation={setConversation}
                 ></ChatConversation>
               
-                <ChatFooter></ChatFooter>
+                <ChatFooter
+                  conversation={conversation}
+                  selectedAppClient={selectedAppClient}
+                  setConversation={setConversation}
+                ></ChatFooter>
                 <ClientInformationUI></ClientInformationUI>
               </div>
 
