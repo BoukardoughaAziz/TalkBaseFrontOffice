@@ -11,10 +11,10 @@ export default defineConfig({
     headers: {
       'Access-Control-Allow-Origin': '*', // Allow all origins
     },
-    https: {
-      key: '../certificate3/example.com+5-key.pem',
-      cert: '../certificate3/example.com+5.pem'
-    }
+    // https: {
+    //   key: '../certificate3/example.com+5-key.pem',
+    //   cert: '../certificate3/example.com+5.pem'
+    // }
   },
   plugins: [react()],
   resolve: {

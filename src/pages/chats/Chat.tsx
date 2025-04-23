@@ -15,6 +15,9 @@ import ChatConversation from './ChatConversation'
 import ChatLeftSide from './ChatLeftSide'
 import ChatHeader from './ChatHeader'
 import ChatFooter from './ChatFooter'
+import conversationService from '@/services/Conversation/conversationService'
+import { Conversation } from '@/models/Conversation'
+import { ClientInformation } from '@/models/ClientInformation'
 
 export default function Chat() {
   const currentUserEmail = useSelector((state) => state.currentUserEmail)
@@ -25,6 +28,12 @@ export default function Chat() {
   >(undefined)
 
   const [conversation, setConversation] = useState(new AppMap(null))
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [convo, setConvo] = useState<Conversation>()
+  const [clientInformation, setclientInformation] = useState<ClientInformation>()
+
+
+
   const socket = useWebSocket()
   const messageEndRef = useRef(null)
 
@@ -160,6 +169,13 @@ export default function Chat() {
   const audioRef = useRef(null)
 
   useEffect(() => {
+    conversationService.getConversations().then((data) => {
+      setConversations(data)
+      console.log("these are the conversations from chats.tsx",conversations)
+    }).catch((error) => {
+      console.error('Error getting conversations:', error)
+    })
+
     if (
       incomingCall.callStatus === CallStatus.INCOMING_CALL &&
       audioRef.current
@@ -181,17 +197,26 @@ export default function Chat() {
         <div className='hk-pg-body py-0'>
           <div className='chatapp-wrap chatapp-info-active'>
             <div className='chatapp-content'>
+
               <ChatLeftSide
                 conversation={conversation}
                 selectedAppClient={selectedAppClient}
                 setSelectedAppClient={setSelectedAppClient}
+                conversations={conversations}
+                setConvo={setConvo}
+                ClientInformation={clientInformation}
+                setClientInformation={setclientInformation}
               ></ChatLeftSide>
+
               <div className='chatapp-single-chat'>
               <ChatHeader></ChatHeader>
+
                 <ChatConversation
-                  conversation={conversation}
-                  selectedAppClient={selectedAppClient}
-                  setConversation={setConversation}
+                  conversation={convo}
+                  setConversation={setConvo}
+                  ClientInformation={clientInformation}
+                  setClientInformation={setclientInformation}
+                  conversations={conversations}
                 ></ChatConversation>
               
                 <ChatFooter
@@ -199,7 +224,12 @@ export default function Chat() {
                   selectedAppClient={selectedAppClient}
                   setConversation={setConversation}
                 ></ChatFooter>
-                <ClientInformationUI></ClientInformationUI>
+                
+                <ClientInformationUI
+                clientInformation={clientInformation}
+                setClientInformation={setclientInformation}>
+
+                </ClientInformationUI>
               </div>
 
               <div

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ChatMessage } from '@/models/ChatMessage'
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL
+const BASE_URL = "http://localhost:15000"
 
 class ConversationService {
   async addMessageFromClientToAgent(incomingChatMessage: ChatMessage) {
@@ -33,7 +33,7 @@ class ConversationService {
   async getConversations() {
     try {
       const response = await axios.get(
-        `${BASE_URL}/api/chat/callcenter/getAllConversations`
+        `${BASE_URL}/NwidgetBackend/conversation/getAllConversations`
       )
       return response.data
     } catch (error) {
@@ -45,7 +45,7 @@ class ConversationService {
   async getConversationByAppClientID(AppClientID: string) {
     try {
       const response = await axios.get(
-        `${BASE_URL}/api/chat/callcenter/findByAppClientID/${AppClientID}`
+        `${BASE_URL}/NwidgetBackend/conversation/findByAppClientID/${AppClientID}`
       )
       return response.data
     } catch (error) {
@@ -57,15 +57,6 @@ class ConversationService {
     }
   }
 
-  async sayHi() {
-    try {
-      const response = await axios.get(`${BASE_URL}/api/chat/sayhi`)
-      return response.data
-    } catch (error) {
-      console.error('Error saying hi:', error)
-      throw error
-    }
-  }
 }
 
 export default new ConversationService()

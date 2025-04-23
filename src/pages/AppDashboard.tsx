@@ -10,7 +10,7 @@ export default function AppDashboard() {
   const [activeComponent, setActiveComponent] = useState('Chat')
 
   useEffect(() => {
-    feather.replace() // Initialize Feather icons
+    feather.replace() 
   }, [])
   return (
     <>

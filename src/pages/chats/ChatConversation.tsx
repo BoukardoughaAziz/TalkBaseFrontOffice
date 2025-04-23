@@ -1,32 +1,42 @@
-import { useState } from 'react'
-import axios from 'axios'
-import ChatDirection from '@/models/ChatDirection'
-import ChatEvent from '@/models/ChatEvent'
-import { AppMap } from '@/components/AppMap'
-import AppStack from './AppStack'
-import { format } from 'date-fns'
-import './ChatConversation.css'
+import ChatDirection from '@/models/ChatDirection';
+import { format } from 'date-fns';
+import './ChatConversation.css';
+import { Conversation } from '@/models/Conversation';
+import { ClientInformation } from '@/models/ClientInformation';
 
-export default function ChatConversation(props) {
-  const [input, setInput] = useState('')
+interface ChatConversationProps {
+  conversation: Conversation | null;
+  setConversation: (conversation: Conversation) => void;
+  ClientInformation: ClientInformation;
+  setClientInformation: (clientInformation: ClientInformation) => void;
+  conversations: Conversation[];
+}
 
+export default function ChatConversation({
+  conversation,
+  setConversation,
+  ClientInformation
+}: ChatConversationProps) {
   return (
     <>
       <div data-simplebar id='chat_body' className='chat-body'>
-        <ul id='dummy_avatar' className='list-unstyled chat-single-list'>
-          {props.selectedAppClient && props.conversation
-            .get(props.selectedAppClient)
-            ?.getItems()
-            ?.filter(
-              (msg: unknown) =>
-                msg.message !== undefined && msg.message?.trim() !== ''
+        <ul className='list-unstyled chat-single-list'>
+          {conversation?.messages
+            .filter(
+              (msg) => msg.message && msg.message.trim() !== ''
             )
-            ?.sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-            ?.map((msg: unknown) => (
+            .sort(
+              (a, b) =>
+                new Date(a.timestamp ?? '').getTime() -
+                new Date(b.timestamp ?? '').getTime()
+            )
+            .map((msg) => (
               <li
                 key={`${msg.identifier}-${msg.timestamp}`}
                 className={`chat-message ${
-                  msg.chatDirection === 'FromAgentToCLient' ? 'sent' : 'received'
+                  msg.chatDirection === ChatDirection.FromAgentToCLient
+                    ? 'sent'
+                    : 'received'
                 }`}
               >
                 <div className='message-content'>
@@ -34,7 +44,9 @@ export default function ChatConversation(props) {
                     <div>
                       <p>{msg.message}</p>
                       <span className='chat-time'>
-                        {format(new Date(msg.timestamp), 'HH:mm')}
+                        {msg.timestamp
+                          ? format(new Date(msg.timestamp), 'HH:mm')
+                          : ''}
                       </span>
                     </div>
                   </div>
@@ -44,5 +56,5 @@ export default function ChatConversation(props) {
         </ul>
       </div>
     </>
-  )
+  );
 }
