@@ -50,6 +50,10 @@ export default function ClientInformationUI({
     }));
   };
 
+  if (!clientInformation) {
+    return null; 
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
