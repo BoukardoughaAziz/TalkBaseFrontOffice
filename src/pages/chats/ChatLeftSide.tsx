@@ -56,8 +56,8 @@ export default function ChatLeftSide(props: ChatLeftSideProps) {
                     onClick={() => {
                       props.setSelectedAppClient(appClient)
                       props.setConvo(conversation)
+                      console.log("the set conversation is ", conversation)
                       ClientInformationService.findClientInfoByIdentifier(conversation.AppClientID).then((data) => {
-                        console.log("these are the client infos *chatleftside*:  " ,data)
                         props.setClientInformation(data)
                       }).catch((error) => {
                         console.error("Error fetching client information: ", error);
@@ -91,7 +91,7 @@ export default function ChatLeftSide(props: ChatLeftSideProps) {
                             {conversation.messages.length > 0
                               ? conversation.messages[
                                   conversation.messages.length - 1
-                                ].content
+                                ].message
                               : 'No messages yet'}
                           </div>
                         </div>

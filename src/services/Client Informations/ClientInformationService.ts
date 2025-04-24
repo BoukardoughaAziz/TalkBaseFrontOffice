@@ -5,12 +5,12 @@ const API_URL = import.meta.env.VITE_BACKEND_URL+'/client-information';
 
 class ClientInformationService {
     async createClientInfo(createClientInformationDto: ClientInformation) {
+        console.log(createClientInformationDto)
         const response = await axios.post(`${API_URL}/create-client`, createClientInformationDto);
         return response.data;
     }
 
     async findClientInfoByIdentifier(identifier: string) {
-        console.log("this is the identifier"+identifier)  
         const response = await axios.get(`${API_URL}/find-client-by-identifier/${identifier}`);
         return response.data;
     }

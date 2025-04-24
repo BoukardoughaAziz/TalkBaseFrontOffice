@@ -171,7 +171,6 @@ export default function Chat() {
   useEffect(() => {
     conversationService.getConversations().then((data) => {
       setConversations(data)
-      console.log("these are the conversations from chats.tsx",conversations)
     }).catch((error) => {
       console.error('Error getting conversations:', error)
     })
@@ -225,11 +224,11 @@ export default function Chat() {
                   setConversation={setConversation}
                 ></ChatFooter>
                 
-                <ClientInformationUI
-                clientInformation={clientInformation}
-                setClientInformation={setclientInformation}>
-
-                </ClientInformationUI>
+                  <ClientInformationUI
+                  clientInformation={clientInformation}
+                  conversation={convo}
+                  setClientInformation={setclientInformation}
+                  />
               </div>
 
               <div
