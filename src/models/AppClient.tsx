@@ -21,4 +21,6 @@ export class AppClient {
   countryCode?: string
 
   associatedAgent?: AppAgent
+
+  SocketId?: string;
 }

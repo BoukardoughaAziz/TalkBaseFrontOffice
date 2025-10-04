@@ -1,6 +1,6 @@
 enum ChatDirection {
     FromClientToAgent = "FromClientToAgent",
-    FromAgentToCLient = "FromAgentToCLient",
+    FromAgentToClient = "FromAgentToCLient",
   }
   export default ChatDirection;
   

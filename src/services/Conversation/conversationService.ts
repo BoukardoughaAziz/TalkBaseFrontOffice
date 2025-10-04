@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ChatMessage } from '@/models/ChatMessage'
 
-const BASE_URL = "http://localhost:15000"
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 class ConversationService {
   async addMessageFromClientToAgent(incomingChatMessage: ChatMessage) {
@@ -29,11 +29,22 @@ class ConversationService {
       throw error
     }
   }
-
+  async getConversationsByAgentId(agentId: string) {
+    try {
+    console.log("this is the agent id we're looking for conversations", agentId);
+      const response = await axios.get(
+        `${BASE_URL}/conversation/byAgent/${agentId}`
+      )
+      return response.data
+    } catch (error) {
+      console.error(`Error getting conversations by agentId ${agentId}:`, error)
+      throw error
+    }
+  }
   async getConversations() {
     try {
       const response = await axios.get(
-        `${BASE_URL}/NwidgetBackend/conversation/getAllConversations`
+        `${BASE_URL}/conversation/getAllConversations`
       )
       return response.data
     } catch (error) {
@@ -45,7 +56,7 @@ class ConversationService {
   async getConversationByAppClientID(AppClientID: string) {
     try {
       const response = await axios.get(
-        `${BASE_URL}/NwidgetBackend/conversation/findByAppClientID/${AppClientID}`
+        `${BASE_URL}/conversation/findByAppClientID/${AppClientID}`
       )
       return response.data
     } catch (error) {

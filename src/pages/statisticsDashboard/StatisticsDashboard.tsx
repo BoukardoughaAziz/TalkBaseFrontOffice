@@ -130,7 +130,7 @@ const StatisticsDashboard = () => {
             <thead className="bg-gray-600 text-white">
               <tr>
                 <th className="p-4 text-left"><FaUsers /> User ID</th>
-                <th className="p-4 text-left"><FaRegClock /> Time Spent </th>
+                <th className="p-4 text-left"><FaRegClock /> Time Spent </th>NotFoundPage.tsx
               </tr>
             </thead>
             <tbody>

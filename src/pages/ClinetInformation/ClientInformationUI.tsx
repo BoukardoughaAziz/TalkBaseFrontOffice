@@ -5,6 +5,7 @@ import ClientInformationService from '@/services/Client Informations/ClientInfor
 
 interface ClientInformationUIProps {
   clientInformation: ClientInformation | null;
+  setShowClientInfo: boolean;
   setClientInformation: (clientInformation: ClientInformation) => void;
   conversation: Conversation;
   onUpdate?: () => void; 
@@ -15,7 +16,8 @@ export default function ClientInformationUI({
   clientInformation,
   conversation,
   onUpdate,
-  setClientInformation
+  setClientInformation,
+  setShowClientInfo
 }: ClientInformationUIProps) {
   const [formData, setFormData] = useState<ClientInformation>({
     name: '',
@@ -29,8 +31,6 @@ export default function ClientInformationUI({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    console.log("the set client information is ", clientInformation)
-    console.log("thisis the identifier ", conversation?.AppClientID)
     if (clientInformation) {
       setFormData(clientInformation);
     } else {

@@ -62,15 +62,15 @@ const SignUp = () => {
         }
       )
 
-      if (response.status === 201) {
+      if (response.status === 201 || response.status === 200) {
         if (response.data.isApproved) {
           dispatch(loginSuccess({ email: data.email, token: response.data.accessToken }))
           navigate('/AppDashboard')
         } else {
-          setError('Your account has been created but requires admin approval. Please check back later.')
+          navigate('/email-verification', {
+            state: { email: data.email }
+          })
         }
-      } else {
-        setError('Registration failed. Please try again.')
       }
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 409) {
@@ -82,6 +82,10 @@ const SignUp = () => {
       setIsLoading(false)
     }
   }
+
+  const handleGoogleSignUp = () => {
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/auth/google`;
+  };
 
   return (
     <div className="hk-wrapper hk-pg-auth" data-footer="simple">
@@ -96,12 +100,12 @@ const SignUp = () => {
                       <div className="col-xxl-5 col-xl-7 col-lg-8 col-sm-10 mx-auto">
                         <div className="text-center mb-7">
                           <a className="navbar-brand me-0" href="/">
-                            <img className="brand-img d-inline-block" src="public/images/logo2.png" alt="brand" style={{ height: "100px" }} />
+                            <img className="brand-img d-inline-block" src="/src/assets/img/TB Logo/TalkBase-Logo-NO-BG.png" alt="brand" style={{ height: "100px" }} />
                           </a>
                         </div>
                         <div className="card card-border">
                           <div className="card-body">
-                            <h4 className="text-center mb-0">Sign Up to Nwidget</h4>
+                            <h4 className="text-center mb-0">Sign Up to Talk Base</h4>
                             <p className="p-xs mt-2 mb-4 text-center">
                               Already have an account?{" "}
                               <a href="#" onClick={(e) => {
@@ -112,8 +116,22 @@ const SignUp = () => {
                               </a>
                             </p>
 
-                            
+                            {/* Google Sign-Up Button */}
+                            <div className="mb-4">
+                              <button
+                                type="button"
+                                className="btn btn-outline-danger btn-uppercase btn-block"
+                                onClick={handleGoogleSignUp}
+                                disabled={isLoading}
+                              >
+                                <i className="fab fa-google me-2"></i>
+                                Sign up with Google
+                              </button>
+                            </div>
 
+                            <div className="divider">
+                              <span className="divider-text">or</span>
+                            </div>
 
                             <div className="row gx-3">
                               <div className="form-group col-lg-6">
@@ -241,7 +259,7 @@ const SignUp = () => {
             <div className="row">
               <div className="col-xl-8 text-center">
                 <p className="footer-text pb-0">
-                  <span className="copy-text">Nwidget © All rights reserved.</span>{" "}
+                  <span className="copy-text">Talk Base © All rights reserved.</span>{" "}
                 </p>
               </div>
             </div>
@@ -252,4 +270,4 @@ const SignUp = () => {
   )
 }
 
-export default SignUp 
+export default SignUp

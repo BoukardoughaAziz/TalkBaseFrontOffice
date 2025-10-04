@@ -16,12 +16,8 @@ const formSchema = z.object({
     .email({ message: "Invalid email address" }),
   password: z
     .string()
-    .min(1, {
-      message: "Please enter your password",
-    })
-    .min(7, {
-      message: "Password must be at least 7 characters long",
-    }),
+    .min(1, { message: "Please enter your password" })
+    .min(7, { message: "Password must be at least 7 characters long" }),
 });
 
 export default function SignIn() {
@@ -30,16 +26,17 @@ export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    console.log("Sign in component mounted");
+  }, []);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
@@ -47,27 +44,36 @@ export default function SignIn() {
     setError(null);
 
     try {
-      const url =
-        import.meta.env.VITE_BACKEND_URL + "/CallCenterAuthController/login";
-      const response = await axios.post(url, {
-        email: data.email,
-        password: data.password,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/login`,
+        data,
+        { withCredentials: true }
+      );
 
-      if (response.status === 201) {
-        dispatch(
-          loginSuccess({ email: data.email, token: response.data.accessToken })
-        );
-        navigate("/AppDashboard");
-      } else {
-        setError("Invalid email or password");
-      }
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+      console.log("Login response:", response.data);
+
+      // ✅ store tokens + user info in Redux
+      dispatch(
+        loginSuccess({
+          accessToken: response.data.accessToken,
+          refreshToken: response.data.refreshToken,
+          user: response.data.user,
+        })
+      );
+
+      // redirect after successful login
+      navigate("/AppDashboard");
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      setError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   }
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/auth/google`;
+  };
 
   return (
     <div className="hk-wrapper hk-pg-auth" data-footer="simple">
@@ -84,7 +90,7 @@ export default function SignIn() {
                           <a className="navbar-brand me-0" href="/">
                             <img
                               className="brand-img d-inline-block"
-                              src="public/images/logo2.png"
+                              src="/src/assets/img/TB Logo/TalkBase-Logo-NO-BG.png"
                               alt="brand"
                               style={{ height: "100px", width: "100px" }}
                             />
@@ -93,11 +99,27 @@ export default function SignIn() {
                         <div className="card card-lg card-border">
                           <div className="card-body">
                             <h4 className="mb-4 text-center">Sign in to your account</h4>
+
+                            {/* Google Sign-In */}
+                            <div className="mb-4">
+                              <button
+                                type="button"
+                                className="btn btn-outline-danger btn-uppercase btn-block"
+                                onClick={handleGoogleLogin}
+                                disabled={isLoading}
+                              >
+                                <i className="fab fa-google me-2"></i>
+                                Sign in with Google
+                              </button>
+                            </div>
+
+                            <div className="divider">
+                              <span className="divider-text">or</span>
+                            </div>
+
                             <div className="row gx-3">
                               <div className="form-group col-lg-12">
-                                <div className="form-label-group">
-                                  <label>Email</label>
-                                </div>
+                                <label>Email</label>
                                 <input
                                   className="form-control"
                                   placeholder="Enter email"
@@ -109,40 +131,31 @@ export default function SignIn() {
                                 )}
                               </div>
                               <div className="form-group col-lg-12">
-                                <div className="form-label-group">
+                                <div className="form-label-group d-flex justify-content-between">
                                   <label>Password</label>
                                   <a href="#" className="fs-7 fw-medium">Forgot Password?</a>
                                 </div>
-                                <div className="input-group password-check">
-                                  <span className="input-affix-wrapper">
-                                    <input
-                                      className="form-control"
-                                      placeholder="Enter your password"
-                                      type="password"
-                                      {...register("password")}
-                                    />
-                                  </span>
-                                </div>
+                                <input
+                                  className="form-control"
+                                  placeholder="Enter your password"
+                                  type="password"
+                                  {...register("password")}
+                                />
                                 {errors.password && (
                                   <p className="text-danger">{errors.password.message}</p>
                                 )}
                               </div>
                             </div>
+
                             <div className="d-flex justify-content-center">
                               <div className="form-check form-check-sm mb-3">
-                                <input
-                                  type="checkbox"
-                                  className="form-check-input"
-                                  id="logged_in"
-                                />
-                                <label
-                                  className="form-check-label text-muted fs-7"
-                                  htmlFor="logged_in"
-                                >
+                                <input type="checkbox" className="form-check-input" id="logged_in" />
+                                <label className="form-check-label text-muted fs-7" htmlFor="logged_in">
                                   Keep me logged in
                                 </label>
                               </div>
                             </div>
+
                             <button
                               type="submit"
                               className="btn btn-primary btn-uppercase btn-block"
@@ -150,9 +163,11 @@ export default function SignIn() {
                             >
                               {isLoading ? "Signing in..." : "Login"}
                             </button>
+
                             {error && <p className="text-danger mt-2">{error}</p>}
+
                             <p className="p-xs mt-2 text-center">
-                              New to Nwidget?{" "}
+                              New to Talk Base?{" "}
                               <a
                                 href="#"
                                 onClick={(e) => {
@@ -179,12 +194,12 @@ export default function SignIn() {
             <div className="row">
               <div className="col-xl-8 text-center">
                 <p className="footer-text pb-0">
-                  <span className="copy-text">Nwidget All rights reserved.</span>{" "}
-                  <a href="#" className="" target="_blank">Privacy Policy</a>
+                  <span className="copy-text">Talk Base © All rights reserved.</span>{" "}
+                  <a href="#" target="_blank">Privacy Policy</a>
                   <span className="footer-link-sep">|</span>
-                  <a href="#" className="" target="_blank">T&C</a>
+                  <a href="#" target="_blank">T&C</a>
                   <span className="footer-link-sep">|</span>
-                  <a href="#" className="" target="_blank">System Status</a>
+                  <a href="#" target="_blank">System Status</a>
                 </p>
               </div>
             </div>

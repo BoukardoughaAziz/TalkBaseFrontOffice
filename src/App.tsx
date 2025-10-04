@@ -1,36 +1,52 @@
-import { Route, Routes } from 'react-router-dom'
-import routesConfig, { authRoutes } from './RoutesConfig.js'
+import { Route, Routes } from "react-router-dom";
+import routesConfig, { authRoutes } from "./RoutesConfig.js";
+import SignIn from "./pages/auth/SignIn";
+import SignUp from "./pages/auth/SignUp";
+import EmailVerification from "./pages/auth/EmailVerification.js";
+import NotFoundPage from "./pages/404/NotFoundPage.js";
+import AppDashboard from "./pages/AppDashboard.js";
+import Chat from "./pages/chats/Chat.js";
+import AgentManagement from "./pages/agents/AgentManagement";
+import GoogleLookerDashboard from "./pages/GoogleLookerDashboard.js";
+import Layout from "./pages/layout.js";
 import './assets/css/style.css'
 import './assets/js/dropdown-bootstrap-extended.js'
-import AppDashboard from './pages/AppDashboard.js'
-import SignIn from './pages/auth/SignIn'
-import SignUp from './pages/auth/SignUp'
-import Chat from './pages/chats/Chat.js'
-import AgentManagement from './pages/agents/AgentManagement'
 
 export const ALL_COMPONENTS = {
   AppDashboard: { name: AppDashboard, value: <AppDashboard /> },
   Chat: { name: Chat, value: <Chat /> },
   SignUp: { name: SignUp, value: <SignUp /> },
   SignIn: { name: SignIn, value: <SignIn /> },
+  EmailVerification: { name: EmailVerification, value: <EmailVerification /> },
   AgentManagement: { name: AgentManagement, value: <AgentManagement /> },
+  GoogleLookerDashboard: { name: GoogleLookerDashboard, value: <GoogleLookerDashboard /> }, // ✅ key fixed
+  NotFoundPage: { name: NotFoundPage, value: <NotFoundPage /> }, 
 };
+
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<SignIn />} />
-      {[...routesConfig, ...authRoutes].map(({ path, component }) => {
-        const ComponentData = ALL_COMPONENTS[component]; // Get component object
+      {/* Public routes without sidebar */}
+      <Route path="/sign-in" element={<SignIn />} />
+      <Route path="/sign-up" element={<SignUp />} />
+      <Route path="/email-verification" element={<EmailVerification />} />
+      <Route path="/*" element={<NotFoundPage />} />
 
-        if (!ComponentData) {
-          return <Route key={path} path={path} element={<div>Not Found</div>} />;
-        }
+      {/* Protected routes with sidebar */}
+      <Route element={<Layout />}>
+        {routesConfig.map(({ path, component }) => {
+          const ComponentData = ALL_COMPONENTS[component];
+          if (!ComponentData) {
+            return <Route key={path} path={path} element={<NotFoundPage />} />;
+          }
+          const Component = ComponentData.name;
+          return <Route key={path} path={path} element={<Component />} />;
+        })}
+      </Route>
 
-        const Component = ComponentData.name; // Extract the actual component reference
-
-        return <Route key={path} path={path} element={<Component />} />;
-      })}
+      {/* Catch all */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

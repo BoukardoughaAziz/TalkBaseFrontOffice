@@ -1,38 +1,48 @@
-export default function NavItem(props) {
+export default function NavItem({ componentName, icon, isCollapsed, active, setActiveComponent, component }) {
+  // Get the appropriate icon SVG based on the icon prop
+  const getIconSVG = () => {
+    switch(icon) {
+      case 'IconDashboard':
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        );
+      case 'IconUsers':
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        );
+      // Add other icons as needed
+      default:
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+          </svg>
+        );
+    }
+  };
+
   return (
-    <>
-      <li className={`nav-item ${props.active ? 'active' : ''}`}>
-        <button
-          className='nav-link'
-          onClick={() => props.setActiveComponent(props.component)}
-        >
-          <span className='nav-icon-wrap'>
-            <span className='svg-icon'>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                className='icon icon-tabler icon-tabler-calendar-time'
-                width='24'
-                height='24'
-                viewBox='0 0 24 24'
-                strokeWidth='2'
-                stroke='currentColor'
-                fill='none'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              >
-                <path stroke='none' d='M0 0h24v24H0z' fill='none' />
-                <path d='M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4' />
-                <circle cx='18' cy='18' r='4' />
-                <path d='M15 3v4' />
-                <path d='M7 3v4' />
-                <path d='M3 11h16' />
-                <path d='M18 16.496v1.504l1 1' />
-              </svg>
-            </span>
+    <li className={`nav-item ${active ? 'active' : ''}`}>
+      <button
+        className='nav-link'
+        onClick={() => setActiveComponent(component)}
+      >
+        <span className='nav-icon-wrap'>
+          <span className='svg-icon'>
+            {getIconSVG()}
           </span>
-          <span className='nav-link-text'>{props.componentName}</span>
-        </button>
-      </li>
-    </>
-  )
+        </span>
+        {!isCollapsed && <span className='nav-link-text'>{componentName}</span>}
+      </button>
+    </li>
+  );
 }
