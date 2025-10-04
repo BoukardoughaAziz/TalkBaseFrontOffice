@@ -17,7 +17,7 @@
     "@livekit/components-styles": "^1.1.4",
     "@radix-ui/react-avatar": "^1.1.4",
     "@radix-ui/react-slot": "^1.2.0",
-    "@reduxjs/toolkit": "^2.6.1",
+    "@reduxjs/toolkit": "^2.9.0",
     "@tabler/icons-react": "^3.33.0",
     "@types/redux": "^3.6.31",
     "@types/simple-peer": "^9.11.8",
