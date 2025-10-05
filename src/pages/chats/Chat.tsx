@@ -5,7 +5,6 @@ import ChatDirection from '@/models/ChatDirection';
 import ChatEvent from '@/models/ChatEvent';
 import { ChatMessage } from '@/models/ChatMessage';
 import { useWebSocket } from '@/context/WebSocketProvider';
-import { AppMap } from '@/components/AppMap';
 import ClientInformationUI from '../ClinetInformation/ClientInformationUI';
 import AppStack from './AppStack';
 import CallStatus from './CallStatus';
@@ -261,11 +260,11 @@ export default function Chat() {
     if (!input.trim()) return;
     
     const chatMessage: ChatMessage = {
+      senderId: connectedAgent?._id || 'unknown-agent',
       message: input,
       timestamp: new Date(),
-      identifier: convo?.AppClientID || '',
       conversationId: convo?.AppClientID || '',
-      chatDirection: ChatDirection.FromAgentToCLient,
+      chatDirection: ChatDirection.FromAgentToClient,
       appClient: {
         identifier: convo?.AppClientID || '',
         humanIdentifier: convo?.AppClientID || '',
@@ -275,16 +274,7 @@ export default function Chat() {
         city: "Mock City",
         org: "Mock Organization",
         countryCode: "MC",
-        associatedAgent: {
-          identifier: "mock-associated-agent-id",
-          humanIdentifier: "mock-associated-human-identifier",
-          appOS: { name: "mock-associated-os", version: "2.0.0" },
-          appBrowser: { name: "mock-associated-browser", version: "2.0.0" },
-          ipAddress: "192.168.1.2",
-          city: "Mock Associated City",
-          org: "Mock Associated Organization",
-          countryCode: "MA",
-        },
+        SocketId: connectedAgent?.SocketId,
       },
       chatEvent: ChatEvent.MessageFromAgentToClient,
     };
@@ -453,11 +443,12 @@ export default function Chat() {
                 <ChatConversation
                   conversation={convo}
                   setConversation={setConvo}
-                  ClientInformation={clientInformation}
-                  setClientInformation={setClientInformation}
                   conversations={conversations}
                   setConversations={setConversations}
-                  setConvo={setConvo}
+                  ClientInformation={clientInformation}
+                  setClientInformation={setClientInformation}
+                  connectedAgent={connectedAgent}
+                  setConnectedAgent={setConnectedAgent}
                 />
               ) : (
                 <ChatWithVideoCall
@@ -528,11 +519,11 @@ export default function Chat() {
                 </button>
               </footer>
               
-              <ClientInformationUI
+              {/* <ClientInformationUI
                 clientInformation={clientInformation}
                 conversation={convo}
                 setClientInformation={setClientInformation}
-              />
+              /> */}
             </div>
 
         

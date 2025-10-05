@@ -115,10 +115,7 @@ useEffect(() => {
   return (
     <div className='hk-wrapper'>
       <div className={`hk-pg-wrapper ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
-          <ChatLeftSide
-            conversations={conversations}
-            setConvo={setConvo}
-          /> 
+          <ChatLeftSide/> 
       </div>
 
 
@@ -131,7 +128,6 @@ useEffect(() => {
             setConversations={setConversations}
             ClientInformation={clientInformation}
             setClientInformation={setClientInformation}
-            setShowClientInfo={setShowClientInfo}
             setConnectedAgent={setConnectedAgent}
             connectedAgent={connectedAgent}
           /> 

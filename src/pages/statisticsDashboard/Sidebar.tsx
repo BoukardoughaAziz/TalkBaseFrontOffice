@@ -23,7 +23,7 @@ interface SidebarProps {
   setIsHovered?: (hovered: boolean) => void;
 }
 
-export default function ModernSidebar({ 
+export default function Sidebar({ 
   isCollapsed: propCollapsed,
   isHovered: propHovered,
   toggleSidebar: propToggleSidebar,
@@ -120,7 +120,7 @@ export default function ModernSidebar({
           >
             <div className="nav-icon">
               <IconComponent size={20} />
-              {item.badge && <span className="badge">{item.badge}</span>}
+              {item.icon && <span className="badge">{item.label}</span>}
             </div>
             {shouldShowFullContent && (
               <span className={`nav-label ${shouldShowFullContent ? 'visible' : 'hidden'}`}>

@@ -34,7 +34,7 @@ const VideoCallConversation = (props) => {
         <CustomControlBar />
       </LayoutContextProvider>
 
-      <style jsx>{`
+      <style>{`
         .video-container {
           width: 100%;
           height: 100%;
@@ -63,7 +63,7 @@ function Stage() {
         }}
       />
 
-      <style jsx>{`
+      <style>{`
         .stage-container {
           width: 100%;
           flex: 1;
@@ -108,7 +108,7 @@ function CustomControlBar() {
           leave: true,
         }}
       />
-      <style jsx>{`
+      <style>{`
         .control-bar-container {
           position: absolute;
           bottom: 20px;

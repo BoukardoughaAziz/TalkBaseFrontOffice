@@ -18,8 +18,6 @@ interface ChatConversationsProps {
   setConversations: (conversations: Conversation[]) => void;
   ClientInformation: ClientInformation;
   setClientInformation: (clientInformation: ClientInformation) => void;
-  setShowClientInfo: (show: boolean) => void;
-  showclientinfo: boolean;
   connectedAgent: AppAgent;
   setConnectedAgent: (agent: AppAgent) => void;
 }
@@ -355,11 +353,11 @@ export default function ChatConversations({
         <div className="messages-container">
           {conversation.messages
             .filter(msg => msg.message && msg.message.trim() !== "")
-            .map((msg) => {
+            .map((msg , index) => {
               const isAgent = msg.chatDirection === ChatDirection.FromAgentToClient;
               return (
                 <div
-                  key={msg._id}
+                  key={`msg-${index}`}
                   className={`message-wrapper ${isAgent ? "from-agent" : "from-client"}`}
                 >
                   <div

@@ -178,7 +178,7 @@ export default function GoogleLookerDashboard({
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .dashboard-container {
           width: 100%;
           height: 100vh;

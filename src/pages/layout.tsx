@@ -1,12 +1,12 @@
 import { Outlet } from "react-router-dom";
-import ModernSidebar from "./statisticsDashboard/Sidebar";
+import Sidebar from "./statisticsDashboard/Sidebar";
 
 
 export default function Layout() {
   return (
     <div className="app-container" style={{ display: "flex", height: "100vh" }}>
       {/* Sidebar always visible */}
-      <ModernSidebar />
+      <Sidebar />
 
       {/* Main content area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>

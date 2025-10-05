@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Search, Settings, Plus, MoreHorizontal, MessageSquare, Users, Archive, Star, UserCheck, ToggleRight, User } from 'lucide-react'
 
 // Mock interfaces for the demo
@@ -15,10 +15,10 @@ interface Conversation {
   unreadCount?: number;
 }
 
-interface ChatLeftSideProps {
-  conversations: Conversation[];
-  setConvo?: (convo: Conversation) => void;
-}
+// interface ChatLeftSideProps {
+//   conversations: Conversation[];
+//   setConvo?: (convo: Conversation) => void;
+// }
 
 // Mock data for demonstration
 const mockConversations: Conversation[] = [
@@ -50,19 +50,27 @@ const mockConversations: Conversation[] = [
   }
 ];
 
-export default function ChatLeftSide({ conversations = mockConversations, setConvo }: ChatLeftSideProps) {
+export default function ChatLeftSide() {
   const [search, setSearch] = useState('')
   const [selectedAppClientID, setSelectedAppClientID] = useState<string | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
+  // initialize to mock data (or use [] to start empty and fetch real data in useEffect)
+  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [conversation, setConversation] = useState<Conversation | null>(null);
 
-  const filteredConversations = conversations.filter((conversation) =>
+  // safe filter in case conversations is ever undefined
+  const filteredConversations = (conversations || []).filter((conversation) =>
     conversation.AppClientID.toLowerCase().includes(search.toLowerCase())
   )
+// use it fetch all of the connected agent conversations
+  useEffect(() => {
+    
+  }, [])
 
   const handleConversationClick = (conversation: Conversation) => {
     setSelectedAppClientID(conversation.AppClientID)
-    setConvo?.(conversation)
+    setConversation(conversation)
     console.log('Joining conversation:', conversation.AppClientID)
   }
 

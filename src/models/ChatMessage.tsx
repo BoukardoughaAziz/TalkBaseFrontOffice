@@ -34,7 +34,6 @@ export interface MessageAttachment {
 
 
 export class ChatMessage {
-  _id: string;
   message?: string
   chatDirection?: ChatDirection
   appClient?: AppClient
