@@ -39,38 +39,41 @@ export default function SignIn() {
     defaultValues: { email: "", password: "" },
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    setError(null);
+// In your onSubmit function
+async function onSubmit(data: z.infer<typeof formSchema>) {
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/login`,
-        data,
-        { withCredentials: true }
-      );
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/login`,
+      data,
+      { withCredentials: true }
+    );
 
-      console.log("Login response:", response.data);
+    console.log("Login response:", response.data);
 
-      // ✅ store tokens + user info in Redux
-      dispatch(
-        loginSuccess({
-          accessToken: response.data.accessToken,
-          refreshToken: response.data.refreshToken,
-          user: response.data.user,
-        })
-      );
+    // Store in Redux
+    dispatch(
+      loginSuccess({
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+        user: response.data.user,
+      })
+    );
 
-      // redirect after successful login
-      navigate("/AppDashboard");
-    } catch (err: any) {
-      console.error("Login failed:", err);
-      setError(err.response?.data?.message || "Login failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    // Also store in localStorage as backup
+    localStorage.setItem('accessToken', response.data.accessToken);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+
+    navigate("/AppDashboard");
+  } catch (err: any) {
+    console.error("Login failed:", err);
+    setError(err.response?.data?.message || "Login failed. Please try again.");
+  } finally {
+    setIsLoading(false);
   }
-
+}
   const handleGoogleLogin = () => {
     window.location.href = `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/auth/google`;
   };
