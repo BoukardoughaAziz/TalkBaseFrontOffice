@@ -28,6 +28,7 @@ export default function App() {
   return (
     <Routes>
       {/* Public routes without sidebar */}
+      <Route path="/" element={<SignUp />} />
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-up" element={<SignUp />} />
       <Route path="/email-verification" element={<EmailVerification />} />
