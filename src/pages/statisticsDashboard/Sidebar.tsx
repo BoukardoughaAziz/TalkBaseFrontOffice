@@ -70,6 +70,25 @@ export default function Sidebar({
       }
   }, [isCollapsed,connectedAgent]);
 
+
+    useEffect(() => {
+      console.log("Sidebar mounted");
+      try {
+        const userJson = localStorage.getItem('user');
+        if (userJson) {
+          const user = JSON.parse(userJson);
+          console.log("Logged in user from localStorage:", user);
+          setConnectedAgent(user);
+        } else {
+          console.log("No user found in localStorage");
+          setConnectedAgent(null);
+        }
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+        setConnectedAgent(null);
+      }
+  }, []);
+
   return (
     <>
       <div 

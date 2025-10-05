@@ -31,6 +31,25 @@ export default function AppDashboard() {
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent = useRef<Socket | null>(null);
 
+
+    useEffect(() => {
+      console.log("fetching the user from localStorage")
+      try {
+        const userJson = localStorage.getItem('user');
+        if (userJson) {
+          const user = JSON.parse(userJson);
+          console.log("Logged in user from localStorage:", user);
+          setConnectedAgent(user);
+        } else {
+          console.log("No user found in localStorage");
+          setConnectedAgent(null);
+        }
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+        setConnectedAgent(null);
+      }
+  }, []);
+
     useEffect(() => {
       console.log("AppDashboard mounted");
       const cookies = document.cookie.split('; ').reduce((acc, current) => {
@@ -44,6 +63,21 @@ export default function AppDashboard() {
         const user = JSON.parse(decodeURIComponent(userJson));
         setConnectedAgent(user);
         console.log("Connected agent ", connectedAgent);
+      }
+
+       try {
+        const userJson = localStorage.getItem('user');
+        if (userJson) {
+          const user = JSON.parse(userJson);
+          console.log("Logged in user from localStorage:", user);
+          setConnectedAgent(user);
+        } else {
+          console.log("No user found in localStorage");
+          setConnectedAgent(null);
+        }
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+        setConnectedAgent(null);
       }
     }, []);
 

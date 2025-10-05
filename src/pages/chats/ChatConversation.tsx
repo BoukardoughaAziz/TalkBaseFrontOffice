@@ -457,11 +457,14 @@ export default function ChatConversations({
           justify-content: center;
           align-items: center;
           background: #f8fafc;
+          display: flex;
         }
 
         .no-conversation-state {
           text-align: center;
           color: #64748b;
+          max-width: 400px;
+          padding: 2rem;
         }
 
         .no-conversation-icon {
