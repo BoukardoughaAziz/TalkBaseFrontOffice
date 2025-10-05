@@ -100,7 +100,7 @@ const SignUp = () => {
                       <div className="col-xxl-5 col-xl-7 col-lg-8 col-sm-10 mx-auto">
                         <div className="text-center mb-7">
                           <a className="navbar-brand me-0" href="/">
-                            <img className="brand-img d-inline-block" src="/src/assets/img/TB Logo/TalkBase-Logo-NO-BG.png" alt="brand" style={{ height: "100px" }} />
+                            <img className="brand-img d-inline-block" src="https://storied-alpaca-3af434.netlify.app/images/TalkBase-Logo-NO-BG.png" alt="brand" style={{ height: "100px" }} />
                           </a>
                         </div>
                         <div className="card card-border">

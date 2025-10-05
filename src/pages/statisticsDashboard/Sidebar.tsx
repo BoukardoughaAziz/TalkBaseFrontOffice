@@ -83,13 +83,13 @@ export default function Sidebar({
             {shouldShowFullContent ? (
               <div className="logo-full">
                 <div className="logo-icon">
-                  <img src='/src/assets/img/TB Logo/TalkBase-Logo-NO-BG.png' height={50} width={50} />
+                  <img src='https://storied-alpaca-3af434.netlify.app/images/TalkBase-Logo-NO-BG.png' height={50} width={50} />
                 </div>
                 <span className="logo-text">TalkBase</span>
               </div>
             ) : (
               <div className="logo-collapsed">
-                  <img src='/images/TalkBase-Logo.png' height={50} width={50} />
+                  <img src='https://storied-alpaca-3af434.netlify.app/images/TalkBase-Logo.png' height={50} width={50} />
               </div>
             )}
           </div>
