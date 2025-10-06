@@ -46,8 +46,8 @@ useEffect(() => {
     const user = JSON.parse(userCookie);
     console.log("Decoded User:", user);
     setConnectedAgent(user);
+    console.log("we have set the connected agent : ", connectedAgent);
   }
-
 
 conversationService.getConversationsByAgentId(connectedAgent?._id)
         .then(conversations => {
@@ -86,22 +86,6 @@ conversationService.getConversationsByAgentId(connectedAgent?._id)
     console.log("This is the Agent handeling it",AppAgentID)
     console.log("*************************************************")
   })
-
-
-
-
-useEffect(() => {
-  if (connectedAgent?._id) {
-    conversationService.getConversationsByAgentId(connectedAgent?._id)
-      .then(conversations => {
-        setConversations(conversations);
-        console.log("Fetched conversations for agent:", conversations);
-      })
-      .catch(error => {
-        console.error("Error fetching conversations:", error);
-      });
-  }
-}, [connectedAgent]);
 
 
   const toggleSidebar = () => {

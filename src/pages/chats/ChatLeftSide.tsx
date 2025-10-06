@@ -36,19 +36,6 @@ export default function ChatLeftSide({ connectedAgent }: ChatLeftSideProps) {
   )
 
 
-  useEffect(() => {
-    if (connectedAgent?._id) {
-      conversationService.getConversationsByAgentId(connectedAgent?._id)
-        .then(conversations => {
-          setConversations(conversations);
-          console.log("Fetched conversations for agent:", conversations);
-        })
-        .catch(error => {
-          console.error("Error fetching conversations:", error);
-        });
-    }
-  }, [connectedAgent]);
-
   const handleConversationClick = (conversation: Conversation) => {
     setSelectedAppClientID(conversation.AppClientID)
     setConversation(conversation)
