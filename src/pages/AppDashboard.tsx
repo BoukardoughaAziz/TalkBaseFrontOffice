@@ -45,6 +45,7 @@ useEffect(() => {
   if (userCookie) {
     const user = JSON.parse(userCookie);
     console.log("Decoded User:", user);
+    setConnectedAgent(user);
   }
 
 
