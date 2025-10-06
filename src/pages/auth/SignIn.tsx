@@ -61,11 +61,9 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
         user: response.data.user,
       })
     );
-
-    // Also store in localStorage as backup
-    localStorage.setItem('accessToken', response.data.accessToken);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
-
+    // Save user and accessToken to cookies
+    document.cookie = `user=${encodeURIComponent(JSON.stringify(response.data.user))}; path=/;`;
+    document.cookie = `accessToken=${response.data.accessToken}; path=/;`;
     navigate("/AppDashboard");
   } catch (err: any) {
     console.error("Login failed:", err);
@@ -75,6 +73,7 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
   }
 }
   const handleGoogleLogin = () => {
+    console.log("Redirecting to Google OAuth...");
     window.location.href = `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/auth/google`;
   };
 

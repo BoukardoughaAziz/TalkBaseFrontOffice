@@ -32,56 +32,21 @@ export default function AppDashboard() {
   const socketRefAgent = useRef<Socket | null>(null);
 
 
-    useEffect(() => {
-      console.log("fetching the user from localStorage")
-      try {
-        const userJson = localStorage.getItem('user');
-        if (userJson) {
-          const user = JSON.parse(userJson);
-          console.log("Logged in user from localStorage:", user);
-          setConnectedAgent(user);
-        } else {
-          console.log("No user found in localStorage");
-          setConnectedAgent(null);
-        }
-      } catch (error) {
-        console.error("Error parsing user from localStorage:", error);
-        setConnectedAgent(null);
-      }
-  }, []);
+useEffect(() => {
+  console.log("++++++++++++++++++++++++++++++")
+  console.log("trying to fetch the user")
+  console.log("++++++++++++++++++++++++++++++")
+  const accessToken = Cookies.get("access_token");
+  const userCookie = Cookies.get("user");
 
-    useEffect(() => {
-      console.log("AppDashboard mounted");
-      const cookies = document.cookie.split('; ').reduce((acc, current) => {
-        const [key, value] = current.split('=');
-        acc[key] = value;
-        return acc;
-      }, {} as Record<string, string>);
+  console.log("Access Token:", accessToken);
+  console.log("User Cookie:", userCookie);
 
-      const userJson = cookies['user'];
-      if (userJson) {
-        const user = JSON.parse(decodeURIComponent(userJson));
-        setConnectedAgent(user);
-        console.log("Connected agent ", connectedAgent);
-      }
-
-       try {
-        const userJson = localStorage.getItem('user');
-        if (userJson) {
-          const user = JSON.parse(userJson);
-          console.log("Logged in user from localStorage:", user);
-          setConnectedAgent(user);
-        } else {
-          console.log("No user found in localStorage");
-          setConnectedAgent(null);
-        }
-      } catch (error) {
-        console.error("Error parsing user from localStorage:", error);
-        setConnectedAgent(null);
-      }
-    }, []);
-
-
+  if (userCookie) {
+    const user = JSON.parse(userCookie);
+    console.log("Decoded User:", user);
+  }
+}, []);
 
     useEffect(() => {
     if (!socketRefClient.current) {
@@ -112,19 +77,7 @@ export default function AppDashboard() {
   })
 
 
-useEffect(() => {
-  const cookies = document.cookie.split('; ').reduce((acc, current) => {
-    const [key, value] = current.split('=');
-    acc[key] = value;
-    return acc;
-  }, {} as Record<string, string>);
 
-  const userJson = cookies['user'];
-  if (userJson) {
-    const user = JSON.parse(decodeURIComponent(userJson));
-    setConnectedAgent(user);
-  }
-}, []);
 
 useEffect(() => {
   if (connectedAgent?._id) {
