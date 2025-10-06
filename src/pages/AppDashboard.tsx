@@ -48,7 +48,7 @@ useEffect(() => {
   }
 
 
-conversationService.getConversationsByAgentId(connectedAgent._id)
+conversationService.getConversationsByAgentId(connectedAgent?._id)
         .then(conversations => {
           setConversations(conversations);
           console.log("Fetched conversations for agent:", conversations);
@@ -91,7 +91,7 @@ conversationService.getConversationsByAgentId(connectedAgent._id)
 
 useEffect(() => {
   if (connectedAgent?._id) {
-    conversationService.getConversationsByAgentId(connectedAgent._id)
+    conversationService.getConversationsByAgentId(connectedAgent?._id)
       .then(conversations => {
         setConversations(conversations);
         console.log("Fetched conversations for agent:", conversations);
