@@ -46,6 +46,16 @@ useEffect(() => {
     const user = JSON.parse(userCookie);
     console.log("Decoded User:", user);
   }
+
+
+conversationService.getConversationsByAgentId(connectedAgent._id)
+        .then(conversations => {
+          setConversations(conversations);
+          console.log("Fetched conversations for agent:", conversations);
+        })
+        .catch(error => {
+          console.error("Error fetching conversations:", error);
+        });
 }, []);
 
     useEffect(() => {
@@ -84,6 +94,7 @@ useEffect(() => {
     conversationService.getConversationsByAgentId(connectedAgent._id)
       .then(conversations => {
         setConversations(conversations);
+        console.log("Fetched conversations for agent:", conversations);
       })
       .catch(error => {
         console.error("Error fetching conversations:", error);
@@ -102,7 +113,9 @@ useEffect(() => {
   return (
     <div className='hk-wrapper'>
       <div className={`hk-pg-wrapper ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
-          <ChatLeftSide/> 
+          <ChatLeftSide
+            connectedAgent={connectedAgent}
+          />
       </div>
 
 

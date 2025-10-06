@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Search, Settings, Plus, MoreHorizontal, MessageSquare, Users, Archive, Star, UserCheck, ToggleRight, User } from 'lucide-react'
+import conversationService from '@/services/Conversation/conversationService'
+import { AppAgent } from '@/models/AppAgent';
 
 // Mock interfaces for the demo
 interface Message {
@@ -15,58 +17,37 @@ interface Conversation {
   unreadCount?: number;
 }
 
-// interface ChatLeftSideProps {
-//   conversations: Conversation[];
-//   setConvo?: (convo: Conversation) => void;
-// }
+interface ChatLeftSideProps {
+  connectedAgent: AppAgent | null;
+}
 
-// Mock data for demonstration
-const mockConversations: Conversation[] = [
-  {
-    AppClientID: "john_doe",
-    messages: [{ message: "Hey, how are you doing today?", timestamp: "2m ago" }],
-    isHandledBy_BB: true,
-    lastActive: "2m ago",
-    unreadCount: 2
-  },
-  {
-    AppClientID: "sarah_wilson",
-    messages: [{ message: "Thanks for your help with the project!" }],
-    lastActive: "1h ago",
-    unreadCount: 0
-  },
-  {
-    AppClientID: "mike_johnson",
-    messages: [{ message: "Can we schedule a meeting for tomorrow?" }],
-    isHandledBy_BB: false,
-    lastActive: "3h ago",
-    unreadCount: 1
-  },
-  {
-    AppClientID: "emma_davis",
-    messages: [{ message: "The files have been uploaded successfully." }],
-    lastActive: "1d ago",
-    unreadCount: 0
-  }
-];
-
-export default function ChatLeftSide() {
+export default function ChatLeftSide({ connectedAgent }: ChatLeftSideProps) {
   const [search, setSearch] = useState('')
   const [selectedAppClientID, setSelectedAppClientID] = useState<string | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
   // initialize to mock data (or use [] to start empty and fetch real data in useEffect)
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [conversations, setConversations] = useState<Conversation[]>();
   const [conversation, setConversation] = useState<Conversation | null>(null);
 
   // safe filter in case conversations is ever undefined
   const filteredConversations = (conversations || []).filter((conversation) =>
     conversation.AppClientID.toLowerCase().includes(search.toLowerCase())
   )
-// use it fetch all of the connected agent conversations
+
+
   useEffect(() => {
-    
-  }, [])
+    if (connectedAgent?._id) {
+      conversationService.getConversationsByAgentId(connectedAgent._id)
+        .then(conversations => {
+          setConversations(conversations);
+          console.log("Fetched conversations for agent:", conversations);
+        })
+        .catch(error => {
+          console.error("Error fetching conversations:", error);
+        });
+    }
+  }, [connectedAgent]);
 
   const handleConversationClick = (conversation: Conversation) => {
     setSelectedAppClientID(conversation.AppClientID)
