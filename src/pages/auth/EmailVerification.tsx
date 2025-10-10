@@ -66,7 +66,7 @@ const EmailVerification = () => {
                       <div className="col-xxl-5 col-xl-7 col-lg-8 col-sm-10 mx-auto">
                         <div className="text-center mb-7">
                           <a className="navbar-brand me-0" href="/">
-                            <img className="brand-img d-inline-block" src=https://photos.app.goo.gl/oyXKPMECuEHEbxue9" alt="brand" style={{ height: "100px" }} />
+                            <img className="brand-img d-inline-block" src="https://photos.app.goo.gl/oyXKPMECuEHEbxue9" alt="brand" style={{ height: "100px" }} />
                           </a>
                         </div>
                         <div className="card card-border">

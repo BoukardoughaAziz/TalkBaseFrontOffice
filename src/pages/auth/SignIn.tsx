@@ -92,7 +92,7 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
                           <a className="navbar-brand me-0" href="/">
                             <img
                               className="brand-img d-inline-block"
-                              src=https://photos.app.goo.gl/oyXKPMECuEHEbxue9"
+                              src="https://photos.app.goo.gl/oyXKPMECuEHEbxue9"
                               alt="brand"
                               style={{ height: "100px", width: "100px" }}
                             />
