@@ -26,16 +26,6 @@ export default function Layout() {
     console.log("we have set the connected agent : ", connectedAgent);
   }
 
-
-  
-// conversationService.getConversationsByAgentId(connectedAgent?._id)
-//         .then(conversations => {
-//           setConversations(conversations);
-//           console.log("Fetched conversations for agent:", conversations);
-//         })
-//         .catch(error => {
-//           console.error("Error fetching conversations:", error);
-//         });
 }, []);
 
 

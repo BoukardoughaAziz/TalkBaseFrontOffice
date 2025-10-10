@@ -17,6 +17,7 @@ import { AppAgent } from '@/models/AppAgent';
 import { Link, useLocation } from 'react-router-dom';
 import conversationService from '@/services/Conversation/conversationService';
 import { Conversation } from '@/models/Conversation';
+import Cookies from 'js-cookie';
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -56,17 +57,27 @@ export default function Sidebar({
   const location = useLocation();
 
   useEffect(() => {
+  console.log("++++++++++++++++++++++++++++++")
+  console.log("trying to fetch the user")
+  console.log("++++++++++++++++++++++++++++++")
+  const accessToken = Cookies.get("access_token");
+  const userCookie = Cookies.get("user");
 
-  
-conversationService.getConversationsByAgentId(connectedAgent?._id)
-        .then(conversations => {
-          setConversations(conversations);
-          console.log("Fetched conversations for agent:", conversations);
-        })
-        .catch(error => {
-          console.error("Error fetching conversations:", error);
-        });
+  console.log("Access Token:", accessToken);
+  console.log("User Cookie:", userCookie);
+
+  if (userCookie) {
+    const user = JSON.parse(userCookie);
+    console.log("Decoded User:", user);
+    setConnectedAgent(user);
+    console.log("we have set the connected agent : ", connectedAgent);
+  }
+
+  console.log("++++++++++++++++++++++++++++++")
+  console.log("this is the connected agent from the sidebar : ", connectedAgent)
+  console.log("++++++++++++++++++++++++++++++")
 }, []);
+
 
   return (
     <>
@@ -81,13 +92,13 @@ conversationService.getConversationsByAgentId(connectedAgent?._id)
             {shouldShowFullContent ? (
               <div className="logo-full">
                 <div className="logo-icon">
-                  <img src='https://storied-alpaca-3af434.netlify.app/images/TalkBase-Logo-NO-BG.png' height={50} width={50} />
+                  <img src='https://photos.app.goo.gl/RL4V27S3XZ9iukMK8' height={50} width={50} />
                 </div>
                 <span className="logo-text">TalkBase</span>
               </div>
             ) : (
               <div className="logo-collapsed">
-                  <img src='https://storied-alpaca-3af434.netlify.app/images/TalkBase-Logo.png' height={50} width={50} />
+                  <img src='https://storied-alpaca-3af434.netlify.app/images/https://photos.app.goo.gl/nXnGsXLhsXGxXiFLA' height={50} width={50} />
               </div>
             )}
           </div>

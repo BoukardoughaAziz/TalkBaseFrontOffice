@@ -30,6 +30,23 @@ export default function ChatLeftSide({ connectedAgent }: ChatLeftSideProps) {
   const [conversations, setConversations] = useState<Conversation[]>();
   const [conversation, setConversation] = useState<Conversation | null>(null);
 
+
+  useEffect(() => {
+    console.log("chat left side was mounted")
+    console.log("this is the connected agent id from the chat left side : ", connectedAgent._id)
+    conversationService.getConversationsByAgentId(connectedAgent?._id)
+            .then(conversations => {
+              setConversations(conversations);
+              console.log("Fetched conversations for agent:", conversations);
+            })
+            .catch(error => {
+              console.error("Error fetching conversations:", error);
+            });
+}, []);
+
+
+
+  
   // safe filter in case conversations is ever undefined
   const filteredConversations = (conversations || []).filter((conversation) =>
     conversation.AppClientID.toLowerCase().includes(search.toLowerCase())

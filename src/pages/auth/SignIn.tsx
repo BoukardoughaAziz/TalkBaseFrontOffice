@@ -72,10 +72,20 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(false);
   }
 }
-  const handleGoogleLogin = () => {
-    console.log("Redirecting to Google OAuth...");
-    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/auth/google`;
-  };
+const handleGoogleLogin = () => {
+  console.log("Redirecting to Google OAuth...");
+
+  // Always use the backend URL explicitly
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  // Include credentials when redirecting
+  // We use `window.open` or `window.location.href` — both work,
+  // but since the cookies are set by the backend during redirect,
+  // nothing is manually "sent" here.
+  // The critical part is that your backend callback sets SameSite:'none' cookies.
+  window.location.href = `${backendUrl}/CallCenterAuthController/auth/google`;
+};
+
 
   return (
     <div className="hk-wrapper hk-pg-auth" data-footer="simple">
@@ -92,7 +102,7 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
                           <a className="navbar-brand me-0" href="/">
                             <img
                               className="brand-img d-inline-block"
-                              src="https://storied-alpaca-3af434.netlify.app/images/TalkBase-Logo-NO-BG.png"
+                              src="https://photos.app.goo.gl/RL4V27S3XZ9iukMK8"
                               alt="brand"
                               style={{ height: "100px", width: "100px" }}
                             />

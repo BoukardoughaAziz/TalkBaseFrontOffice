@@ -32,35 +32,24 @@ export default function AppDashboard() {
   const socketRefAgent = useRef<Socket | null>(null);
 
 
-useEffect(() => {
-  fetch(`${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/auth/me`, {
-    method: 'GET',
-    credentials: 'include', // <--- VERY IMPORTANT
-  })
-    .then(async res => {
-      if (!res.ok) throw new Error('Unauthorized');
-      const user = await res.json();
-      console.log('User:', user);
-      // Save in Redux/localStorage if needed
-    })
-    .catch(err => {
-      console.error('Failed to fetch user:', err);
-      window.location.href = '/sign-in';
-    });
+  useEffect(() => {
+  // console.log("++++++++++++++++++++++++++++++")
+  // console.log("trying to fetch the user")
+  // console.log("++++++++++++++++++++++++++++++")
+  const accessToken = Cookies.get("access_token");
+  const userCookie = Cookies.get("user");
 
+  // console.log("Access Token:", accessToken);
+  // console.log("User Cookie:", userCookie);
 
-
-
-  
-conversationService.getConversationsByAgentId(connectedAgent?._id)
-        .then(conversations => {
-          setConversations(conversations);
-          console.log("Fetched conversations for agent:", conversations);
-        })
-        .catch(error => {
-          console.error("Error fetching conversations:", error);
-        });
+  if (userCookie) {
+    const user = JSON.parse(userCookie);
+    // console.log("Decoded User:", user);
+    setConnectedAgent(user);
+    console.log("we have set the connected agent : ", connectedAgent);
+  }
 }, []);
+
 
     useEffect(() => {
     if (!socketRefClient.current) {
@@ -101,9 +90,9 @@ conversationService.getConversationsByAgentId(connectedAgent?._id)
   return (
     <div className='hk-wrapper'>
       <div className={`hk-pg-wrapper ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
-          <ChatLeftSide
-            connectedAgent={connectedAgent}
-          />
+        {connectedAgent && (
+          <ChatLeftSide connectedAgent={connectedAgent} />
+        )}
       </div>
 
 

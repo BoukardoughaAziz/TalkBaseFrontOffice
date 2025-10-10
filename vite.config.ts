@@ -17,9 +17,16 @@ export default defineConfig({
     // }
   },
   plugins: [react()],
+  define: {
+    global: 'globalThis',
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      util: 'util',
     },
+  },
+  optimizeDeps: {
+    include: ['simple-peer'],
   },
 })
