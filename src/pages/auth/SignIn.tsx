@@ -92,7 +92,7 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
                           <a className="navbar-brand me-0" href="/">
                             <img
                               className="brand-img d-inline-block"
-                              src="https://storied-alpaca-3af434.netlify.app/images/TalkBase-Logo-NO-BG.png"
+                              src=https://photos.app.goo.gl/oyXKPMECuEHEbxue9"
                               alt="brand"
                               style={{ height: "100px", width: "100px" }}
                             />
