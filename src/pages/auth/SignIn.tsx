@@ -28,6 +28,13 @@ export default function SignIn() {
 
   useEffect(() => {
     console.log("Sign in component mounted");
+    
+    // Check for OAuth errors in URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorParam = urlParams.get('error');
+    if (errorParam) {
+      setError(`Authentication failed: ${errorParam}`);
+    }
   }, []);
 
   const {

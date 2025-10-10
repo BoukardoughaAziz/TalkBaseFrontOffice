@@ -3,6 +3,7 @@ import routesConfig, { authRoutes } from "./RoutesConfig.js";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import EmailVerification from "./pages/auth/EmailVerification.js";
+import OAuthCallback from "./pages/auth/OAuthCallback";
 import NotFoundPage from "./pages/404/NotFoundPage.js";
 import AppDashboard from "./pages/AppDashboard.js";
 import Chat from "./pages/chats/Chat.js";
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-up" element={<SignUp />} />
       <Route path="/email-verification" element={<EmailVerification />} />
+      <Route path="/auth/callback" element={<OAuthCallback />} />
       <Route path="/*" element={<NotFoundPage />} />
 
       {/* Protected routes with sidebar */}
