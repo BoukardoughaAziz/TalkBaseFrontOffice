@@ -32,7 +32,7 @@ export default function AppDashboard() {
   const socketRefAgent = useRef<Socket | null>(null);
 
 useEffect(() => {
-  fetch(`${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/auth/me`, {
+  fetch(`${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/me`, {
     method: 'GET',
     credentials: 'include', // IMPORTANT: send cookies
   })
