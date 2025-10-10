@@ -31,18 +31,6 @@ export default function AppDashboard() {
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent = useRef<Socket | null>(null);
 
-useEffect(() => {
-  fetch(`${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/me`, {
-    method: 'GET',
-    credentials: 'include', // IMPORTANT: send cookies
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log('User:', data);
-      // Save in state or localStorage if needed
-    })
-    .catch(err => console.error('Fetch user failed:', err));
-}, []);
 
 useEffect(() => {
   console.log("++++++++++++++++++++++++++++++")
