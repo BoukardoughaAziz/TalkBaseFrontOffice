@@ -28,13 +28,6 @@ export default function SignIn() {
 
   useEffect(() => {
     console.log("Sign in component mounted");
-    
-    // Check for OAuth errors in URL params
-    const urlParams = new URLSearchParams(window.location.search);
-    const errorParam = urlParams.get('error');
-    if (errorParam) {
-      setError(`Authentication failed: ${errorParam}`);
-    }
   }, []);
 
   const {
@@ -99,7 +92,7 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
                           <a className="navbar-brand me-0" href="/">
                             <img
                               className="brand-img d-inline-block"
-                              src="https://photos.app.goo.gl/oyXKPMECuEHEbxue9"
+                              src="https://storied-alpaca-3af434.netlify.app/images/TalkBase-Logo-NO-BG.png"
                               alt="brand"
                               style={{ height: "100px", width: "100px" }}
                             />
