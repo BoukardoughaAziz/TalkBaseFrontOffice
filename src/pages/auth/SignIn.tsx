@@ -25,27 +25,6 @@ export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
-  
-useEffect(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get("token");
-  const user = urlParams.get("user");
-
-  if (token && user) {
-    // Save to cookies manually
-    document.cookie = `access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`;
-    document.cookie = `user=${encodeURIComponent(user)}; path=/; max-age=${7 * 24 * 60 * 60}`;
-
-    // Optionally save to Redux/localStorage
-    dispatch(loginSuccess({
-      accessToken: token,
-      user: JSON.parse(decodeURIComponent(user)),
-    }));
-
-    // Redirect to dashboard
-    navigate("/AppDashboard");
-  }
-}, []);
 
   useEffect(() => {
     console.log("Sign in component mounted");
