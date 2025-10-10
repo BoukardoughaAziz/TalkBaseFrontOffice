@@ -15,12 +15,15 @@ import {
 } from 'lucide-react'
 import { AppAgent } from '@/models/AppAgent';
 import { Link, useLocation } from 'react-router-dom';
+import conversationService from '@/services/Conversation/conversationService';
+import { Conversation } from '@/models/Conversation';
 
 interface SidebarProps {
   isCollapsed?: boolean;
   isHovered?: boolean;
   toggleSidebar?: () => void;
   setIsHovered?: (hovered: boolean) => void;
+  connectedAgent?: AppAgent | null;
 }
 
 export default function Sidebar({ 
@@ -33,6 +36,7 @@ export default function Sidebar({
   const [internalHovered, setInternalHovered] = useState(false)
   const [activeItem, setActiveItem] = useState('Chat')
   const [connectedAgent, setConnectedAgent] = useState<AppAgent | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   
 
   // Use props if provided, otherwise use internal state
@@ -52,43 +56,17 @@ export default function Sidebar({
   const location = useLocation();
 
   useEffect(() => {
-    console.log("side bar mounted")
-      const cookies = document.cookie.split('; ').reduce((acc, current) => {
-        const [key, value] = current.split('=');
-        acc[key] = value;
-        return acc;
-      }, {} as Record<string, string>);
 
-      console.log("Parsed cookies:", cookies);
-
-      const userJson = cookies['user'];
-      if (userJson) {
-        console.log("yes")
-        const user = JSON.parse(decodeURIComponent(userJson));
-        console.log("Logged in user: from sidebar", user);
-        setConnectedAgent(user);
-        console.log("Connected agent ", connectedAgent);
-      }
-  }, []);
-
-
-  //   useEffect(() => {
-  //     console.log("Sidebar mounted");
-  //     try {
-  //       const userJson = localStorage.getItem('user');
-  //       if (userJson) {
-  //         const user = JSON.parse(userJson);
-  //         console.log("Logged in user from localStorage:", user);
-  //         setConnectedAgent(user);
-  //       } else {
-  //         console.log("No user found in localStorage");
-  //         setConnectedAgent(null);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error parsing user from localStorage:", error);
-  //       setConnectedAgent(null);
-  //     }
-  // }, []);
+  
+conversationService.getConversationsByAgentId(connectedAgent?._id)
+        .then(conversations => {
+          setConversations(conversations);
+          console.log("Fetched conversations for agent:", conversations);
+        })
+        .catch(error => {
+          console.error("Error fetching conversations:", error);
+        });
+}, []);
 
   return (
     <>
