@@ -10,6 +10,8 @@ import conversationService from '@/services/Conversation/conversationService';
 import { ChevronLeft, FileText, Image, Info, MapPin, MoreVertical, Paperclip, Phone, PhoneCall, Send, Smile, Users, Video, VideoIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import ClientInformationUI from '../ClinetInformation/ClientInformationUI';
+import ClientInformationService from '@/services/Client Informations/ClientInformationService';
 
 
 interface ChatConversationsProps {
@@ -30,8 +32,7 @@ export default function ChatConversations({
   // conversations ,
   // setConversations,
   ClientInformation ,
-  setConnectedAgent,
-  connectedAgent
+
 }: ChatConversationsProps) {
   const [input, setInput] = useState('');
   const [callState, setCallState] = useState<'idle' | 'ringing' | 'active'>('idle');
@@ -46,16 +47,26 @@ export default function ChatConversations({
   const inputRef = useRef<HTMLInputElement>(null);
 
 
-  const [showClientInfo, setShowClientInfo] = useState<boolean>(false);
+  const {  connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo } = useConversation();
 
 
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent  = useRef<Socket | null>(null);
   // Auto-scroll to bottom when messages change
-
+  const [formData, setFormData] = useState<ClientInformation>({
+    name: '',
+    identifier: conversation?.AppClientID || '',
+    email: '',
+    phoneNumber: '',
+    jobTitle: '',
+    notes: '',
+  });
 
   const { conversations, convo, setConversations, setConvo } = useConversation();
   
+  if (showClientInfo) {
+    console.log("this is the current state of showClientInfo ", showClientInfo)
+  }
 
 
     useEffect(() => {
@@ -75,73 +86,21 @@ export default function ChatConversations({
     const socketAgent = socketRefAgent.current;
   }, []);
 
-//   useEffect(() => {
-//     console.log("the chat conversation component loaded")
-//   // Handle incoming client messages
-//   socketRefClient.current?.on('MESSAGE_FROM_CLIENT_TO_AGENT', (message: ChatMessage) => {
-//     console.log('New message from client:', message);
-    
-//     // Only add the message if it belongs to the current conversation
-//     if (conversation && message.conversationId === conversation.AppClientID) {
-//       const updatedConversation = {
-//         ...conversation,
-//         messages: [...conversation.messages, message]
-//       };
-
-//       // Update current conversation
-//       setConversation(updatedConversation);
-      
-//       // Update conversations list
-//       setConversations(conversations.map(conv => 
-//         conv.AppClientID === updatedConversation.AppClientID 
-//           ? updatedConversation 
-//           : conv
-//       ));
-//     }
-//   });
-
-//   // Handle incoming agent messages (for multi-agent scenarios)
-//   socketRefAgent.current?.on('MESSAGE_FROM_AGENT_TO_CLIENT', (message: ChatMessage) => {
-//     console.log('New message from agent:', message);
-    
-//     if (conversation && message.conversationId === conversation.AppClientID) {
-//       const updatedConversation = {
-//         ...conversation,
-//         messages: [...conversation.messages, message]
-//       };
-
-//       setConversation(updatedConversation);
-//       setConversations(conversations.map(conv => 
-//         conv.AppClientID === updatedConversation.AppClientID 
-//           ? updatedConversation 
-//           : conv
-//       ));
-//     }
-//   });
-
-//   // Auto-scroll when new messages arrive
-//   scrollToBottom();
-
-//   // Cleanup function to remove listeners
-//   return () => {
-//     socketRefClient.current?.off('MESSAGE_FROM_CLIENT_TO_AGENT');
-//     socketRefAgent.current?.off('MESSAGE_FROM_AGENT_TO_CLIENT');
-//   };
-// }, [conversation, conversations, setConversation, setConversations]);
-
-
-
-//   useEffect(() => {
-//   console.log("showClientInfo changed:", showClientInfo);
-// }, [showClientInfo]);
-
-//   useEffect(() => {
-//   console.log("this is the conncted client ", connectedAgent);
-// }, [connectedAgent]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+
+
+  useEffect(() => {
+    scrollToBottom();
+    ClientInformationService.findClientInfoByIdentifier(conversation?.AppClientID || '').then((data) => {
+      setFormData(data);
+      setClientInformation(data);
+    });
+  }, [conversation?.AppClientID, setClientInformation]);
+
 
   const handleSendMessage = () => {
     console.log("handle send message called")
@@ -317,10 +276,10 @@ export default function ChatConversations({
             <Video size={18} />
           </button>
             <button 
-            className="action-btn"
-            onClick={() => setShowClientInfo(true)}
-          >
-            <Info size={18} />
+              className="action-btn"
+              onClick={() => setShowClientInfo((prev) => !prev)}
+            >
+              <Info size={18} />
             </button>
           
           <div className="dropdown-container">
@@ -344,16 +303,7 @@ export default function ChatConversations({
         </div>
       </header>
 
-      {/* Client Info Modal or Panel */}
-      {showClientInfo && (
-        <div>
-          <h1>we need to display client info </h1>
-          <button onClick={() => setShowClientInfo(false)}> X </button>
-        </div>
 
-      )}
-
-      {/* Chat Messages */}
       <div className="chat-messages">
         {conversation.messages
           .filter(msg => msg.message && msg.message.trim() !== "")

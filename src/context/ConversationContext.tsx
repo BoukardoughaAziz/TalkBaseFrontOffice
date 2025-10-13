@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import conversationService from "@/services/Conversation/conversationService";
 import AgentType from "@/models/AgentType";
+import { ClientInformation } from "@/models/ClientInformation";
 
 interface ConversationContextType {
   user: AppAgent | null;
@@ -14,6 +15,10 @@ interface ConversationContextType {
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
   setConvo: React.Dispatch<React.SetStateAction<Conversation | undefined>>;
   setConnectedAgent: React.Dispatch<React.SetStateAction<AppAgent | null>>;
+  showClientInfo: boolean;
+  clientInformation: ClientInformation | undefined;
+  setClientInformation: React.Dispatch<React.SetStateAction<ClientInformation | undefined>>;
+  setShowClientInfo: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ConversationContext = createContext<ConversationContextType | null>(null);
@@ -24,7 +29,8 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [convo, setConvo] = useState<Conversation>();
   const [connectedAgent, setConnectedAgent] = useState<AppAgent | null>(null);
-
+  const [clientInformation, setClientInformation] = useState<ClientInformation>();
+  const [showClientInfo, setShowClientInfo] = useState<boolean>(false);
 // Initialize from cookies on first mount
 useEffect(() => {
     
@@ -128,6 +134,10 @@ useEffect(() => {
         setConversations,
         setConvo,
         setConnectedAgent,
+        showClientInfo,
+        setClientInformation,
+        setShowClientInfo,
+        clientInformation
       }}
     >
       {children}

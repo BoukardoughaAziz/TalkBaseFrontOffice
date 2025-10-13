@@ -23,15 +23,9 @@ export default function AppDashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   
-  
-  // const [conversations, setConversations] = useState<Conversation[]>([]);
-  // const [convo, setConvo] = useState<Conversation>();
-  const [clientInformation, setClientInformation] = useState<ClientInformation>();
-  const [showClientInfo, setShowClientInfo] = useState<boolean>(false);
-
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent = useRef<Socket | null>(null);
-  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent } = useConversation();
+  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo } = useConversation();
 
     useEffect(() => {
     if (!socketRefClient.current) {
@@ -92,6 +86,18 @@ export default function AppDashboard() {
           /> 
               
       </div>
+      {/* {showClientInfo && (
+        <div className="client-info-panel">
+          <ClientInformationUI />
+        </div>
+      )} */}
+
+
+      {showClientInfo && (
+        <div className="client-info-panel hk-pg-wrapper">
+          <ClientInformationUI />
+        </div>
+      )}     
 
       <style>{`
         .hk-wrapper {
