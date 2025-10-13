@@ -178,7 +178,7 @@ export default function ChatConversations({
 
  if (!conversation) {
     return (
-      <div className="chat-container no-conversation">
+      <div className="chat-container no-conversation" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="no-conversation-state">
           <div className="no-conversation-icon">💬</div>
           <h3>No conversation selected</h3>
