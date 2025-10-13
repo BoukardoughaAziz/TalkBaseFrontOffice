@@ -65,33 +65,56 @@ export default function ChatConversations({
   }
 
 
-    useEffect(() => {
-    if (!socketRefClient.current) {
-      socketRefClient.current = io(import.meta.env.VITE_SOCK_JS_WIDGET_URL, {
-        transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
-      });
-    }
+useEffect(() => {
+  if (!socketRefClient.current) {
+    socketRefClient.current = io(import.meta.env.VITE_SOCK_JS_WIDGET_URL, {
+      transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
+    });
+  }
 
-    if (!socketRefAgent.current) {
-      socketRefAgent.current = io(import.meta.env.VITE_SOCK_JS_CALL_CENTER_URL, {
-        transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
-      });
-    }
+  if (!socketRefAgent.current) {
+    socketRefAgent.current = io(import.meta.env.VITE_SOCK_JS_CALL_CENTER_URL, {
+      transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
+    });
+  }
 
-    const socketClient = socketRefClient.current;
-    const socketAgent = socketRefAgent.current;
-  }, []);
+  const socketClient = socketRefClient.current;
+  const socketAgent = socketRefAgent.current;
+
+  // Set up the listener ONCE when component mounts
+  const handleMessageFromClient = (data: any) => {
+    console.log("Message from client to agent received:", data);
+    
+    // Update the conversation with the new message
+    if (conversation && data.conversationId === conversation.AppClientID) {
+      const updatedConversation = {
+        ...conversation,
+        messages: [...conversation.messages, data]
+      };
+      
+      setConversation(updatedConversation);
+      setConversations(conversations.map(conv => 
+        conv.AppClientID === data.conversationId 
+          ? updatedConversation 
+          : conv
+      ));
+    }
+  };
+
+  // Add listener
+  socketClient?.on('MESSAGE_FROM_CLIENT_TO_AGENT', handleMessageFromClient);
+
+  // Cleanup function - CRITICAL to prevent duplicate listeners
+  return () => {
+    socketClient?.off('MESSAGE_FROM_CLIENT_TO_AGENT', handleMessageFromClient);
+  };
+}, []); // ✅ Empty dependency array - runs only once on mount
 
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-useEffect(() => {
-  socketRefClient.current?.on('MESSAGE_FROM_CLIENT_TO_AGENT', (data) => {
-    console.log("Message from client to agent received:", data);
-  })
-})
 
   useEffect(() => {
     scrollToBottom();
