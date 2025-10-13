@@ -118,7 +118,6 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
                             <img
                               className="brand-img d-inline-block"
                               src="https://res.cloudinary.com/derpsow86/image/upload/v1760315195/TalkBase-Logo-NO-BG_cloahh.png"
-                              alt="brand"
                               style={{ height: "100px", width: "100px" }}
                             />
                           </a>
