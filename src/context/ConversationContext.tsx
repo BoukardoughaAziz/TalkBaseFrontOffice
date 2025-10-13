@@ -52,6 +52,14 @@ useEffect(() => {
       firstname,
       lastname,
       type,
+      emailPin:55,
+      emailVerified: true,
+      isApproved: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      password: "hidden", // Password should not be set from URL params
+      Conversations:[],
+      SocketId: "",
       };
       setConnectedAgent(agent);
       setToken(accessToken);
