@@ -117,7 +117,7 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
                           <a className="navbar-brand me-0" href="/">
                             <img
                               className="brand-img d-inline-block"
-                              src="https://photos.app.goo.gl/RL4V27S3XZ9iukMK8"
+                              src="https://res.cloudinary.com/derpsow86/image/upload/v1760315195/TalkBase-Logo-NO-BG_cloahh.png"
                               alt="brand"
                               style={{ height: "100px", width: "100px" }}
                             />

@@ -91,13 +91,13 @@ export default function Sidebar({
             {shouldShowFullContent ? (
               <div className="logo-full">
                 <div className="logo-icon">
-                  <img src='https://photos.app.goo.gl/RL4V27S3XZ9iukMK8' height={50} width={50} />
+                  <img src='https://res.cloudinary.com/derpsow86/image/upload/v1760315195/TalkBase-Logo-NO-BG_cloahh.png' height={50} width={50} />
                 </div>
                 <span className="logo-text">TalkBase</span>
               </div>
             ) : (
               <div className="logo-collapsed">
-                  <img src='https://storied-alpaca-3af434.netlify.app/images/https://photos.app.goo.gl/nXnGsXLhsXGxXiFLA' height={50} width={50} />
+                  <img src='https://res.cloudinary.com/derpsow86/image/upload/v1760315197/TalkBase-Logo_ypyoja.png' height={50} width={50} />
               </div>
             )}
           </div>
