@@ -303,33 +303,31 @@ export default function ChatConversations({
         </div>
       </header>
 
-
-      <div className="chat-messages">
-        {conversation.messages
-          .filter(msg => msg.message && msg.message.trim() !== "")
-          .map((msg, index) => {
-            const isAgent = msg.chatEvent === ChatEvent.MessageFromAgentToClient;
-            return (
-              <div key={`msg-${index}`} style={{ marginBottom: '1rem' }}>
-                <div
-                  className={`message-wrapper ${isAgent ? "sent" : "received"}`}
-                >
-                  <div
-                    className="message-bubble"
-                  >
-                    <p className="message-text">{msg.message}</p>
-                    <span className="message-time">
-                      {msg.timestamp && !isNaN(new Date(msg.timestamp).getTime())
-                        ? formatTime(new Date(msg.timestamp))
-                        : ""}
-                    </span>
-                  </div>
-                </div>
+<div className="chat-messages">
+  <div className="messages-container">
+    {conversation.messages
+      .filter(msg => msg.message && msg.message.trim() !== "")
+      .map((msg, index) => {
+        const isAgent = msg.chatEvent === ChatEvent.MessageFromAgentToClient;
+        return (
+          <div key={`msg-${index}`} style={{ marginBottom: '1rem' }}>
+            <div className={`message-wrapper ${isAgent ? "sent" : "received"}`}>
+              <div className="message-bubble">
+                <p className="message-text">{msg.message}</p>
+                <span className="message-time">
+                  {msg.timestamp && !isNaN(new Date(msg.timestamp).getTime())
+                    ? formatTime(new Date(msg.timestamp))
+                    : ""}
+                </span>
               </div>
-            );
-          })}
-        <div ref={messagesEndRef} />
-      </div>
+            </div>
+          </div>
+        );
+      })}
+    <div ref={messagesEndRef} />
+  </div>
+</div>
+
 
 
       {/* Chat Footer */}
@@ -748,11 +746,22 @@ export default function ChatConversations({
         }
 
         /* Messages Styles */
-        .chat-messages {
-          flex: 1;
-          overflow: hidden;
-          background: #f8fafc;
-        }
+          .chat-messages {
+            flex: 1;
+            background: #f8fafc;
+            overflow: hidden;
+            position: relative;
+          }
+
+          .messages-container {
+            height: 100%;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+          }
+
 
         .messages-container {
           height: 100%;
