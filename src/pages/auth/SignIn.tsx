@@ -53,6 +53,33 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
 
     console.log("Login response:", response.data);
 
+    // Get existing cookies
+    const getCookie = (name: string) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+
+    const existingUser = getCookie("user");
+    const existingAccessToken = getCookie("accessToken");
+    console.log("this is the backend response user", response.data);
+
+    const newUser = JSON.stringify(response.data.user);
+    const newAccessToken = response.data.accessToken;
+    console.log("this is the new user", newUser);
+    // console.log("this is the new access token", newAccessToken);
+
+    // Compare and update if different
+    if (existingUser !== newUser) {
+      console.log("saving the new user ",newUser )
+      document.cookie = `user=${encodeURIComponent(newUser)}; path=/;`;
+      console.log("different user, updating cookie");
+    }
+    if (existingAccessToken !== newAccessToken) {
+      console.log("saving the new access token ",newAccessToken )
+      document.cookie = `accessToken=${newAccessToken}; path=/;`;
+      console.log("different accessToken, updating cookie");
+    }
+
     // Store in Redux
     dispatch(
       loginSuccess({
@@ -61,9 +88,7 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
         user: response.data.user,
       })
     );
-    // Save user and accessToken to cookies
-    document.cookie = `user=${encodeURIComponent(JSON.stringify(response.data.user))}; path=/;`;
-    document.cookie = `accessToken=${response.data.accessToken}; path=/;`;
+
     navigate("/AppDashboard");
   } catch (err: any) {
     console.error("Login failed:", err);
@@ -72,20 +97,10 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(false);
   }
 }
-const handleGoogleLogin = () => {
-  console.log("Redirecting to Google OAuth...");
-
-  // Always use the backend URL explicitly
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
-  // Include credentials when redirecting
-  // We use `window.open` or `window.location.href` — both work,
-  // but since the cookies are set by the backend during redirect,
-  // nothing is manually "sent" here.
-  // The critical part is that your backend callback sets SameSite:'none' cookies.
-  window.location.href = `${backendUrl}/CallCenterAuthController/auth/google`;
-};
-
+  const handleGoogleLogin = () => {
+    console.log("Redirecting to Google OAuth...");
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/auth/google`;
+  };
 
   return (
     <div className="hk-wrapper hk-pg-auth" data-footer="simple">

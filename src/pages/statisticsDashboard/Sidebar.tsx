@@ -11,13 +11,15 @@ import {
   Bell,
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  LogOut
 } from 'lucide-react'
 import { AppAgent } from '@/models/AppAgent';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import conversationService from '@/services/Conversation/conversationService';
 import { Conversation } from '@/models/Conversation';
 import Cookies from 'js-cookie';
+import { useConversation } from '@/context/ConversationContext';
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -36,9 +38,8 @@ export default function Sidebar({
   const [internalCollapsed, setInternalCollapsed] = useState(false)
   const [internalHovered, setInternalHovered] = useState(false)
   const [activeItem, setActiveItem] = useState('Chat')
-  const [connectedAgent, setConnectedAgent] = useState<AppAgent | null>(null);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   
+  const navigate = useNavigate();
 
   // Use props if provided, otherwise use internal state
   const isCollapsed = propCollapsed !== undefined ? propCollapsed : internalCollapsed
@@ -46,38 +47,36 @@ export default function Sidebar({
   const toggleSidebar = propToggleSidebar || (() => setInternalCollapsed(!internalCollapsed))
   const setIsHovered = propSetIsHovered || setInternalHovered
 
-
   const navigationItems = [
-  { id: 'Dashboard', label: 'Dashboard', icon: Home, path: '/AppDashboard' },
-  // { id: 'Chat', label: 'Chat', icon: MessageCircle, path: '/chat' },
-  { id: 'Analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' }
+    { id: 'Dashboard', label: 'Dashboard', icon: Home, path: '/AppDashboard' },
+    { id: 'Analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' }
   ]
 
   const shouldShowFullContent = !isCollapsed || isHovered
   const location = useLocation();
+  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent } = useConversation();
 
-  useEffect(() => {
-  console.log("++++++++++++++++++++++++++++++")
-  console.log("trying to fetch the user")
-  console.log("++++++++++++++++++++++++++++++")
-  const accessToken = Cookies.get("access_token");
-  const userCookie = Cookies.get("user");
+  const handleLogout = () => {
+    // Clear all cookies
+    Cookies.remove('user');
+    Cookies.remove('accessToken');
+    // Remove all cookies
+    Object.keys(Cookies.get()).forEach(cookie => Cookies.remove(cookie));
 
-  console.log("Access Token:", accessToken);
-  console.log("User Cookie:", userCookie);
-
-  if (userCookie) {
-    const user = JSON.parse(userCookie);
-    console.log("Decoded User:", user);
-    setConnectedAgent(user);
-    console.log("we have set the connected agent : ", connectedAgent);
-  }
-
-  console.log("++++++++++++++++++++++++++++++")
-  console.log("this is the connected agent from the sidebar : ", connectedAgent)
-  console.log("++++++++++++++++++++++++++++++")
-}, []);
-
+    // Clear localStorage
+    localStorage.clear();
+    
+    // Clear sessionStorage
+    sessionStorage.clear();
+    
+    // Reset context state
+    setConnectedAgent(null);
+    setConversations([]);
+    setConvo(null);
+    
+    // Redirect to login page
+    navigate('/sign-in');
+  };
 
   return (
     <>
@@ -115,33 +114,33 @@ export default function Sidebar({
 
         {/* Navigation */}
         <nav className="navigation">
-<ul className="nav-list">
-  {navigationItems.map((item) => {
-    const IconComponent = item.icon;
-    const isActive = location.pathname === item.path;
+          <ul className="nav-list">
+            {navigationItems.map((item) => {
+              const IconComponent = item.icon;
+              const isActive = location.pathname === item.path;
 
-    return (
-      <li key={item.id}>
-        <Link to={item.path}>
-          <button
-            className={`nav-item ${isActive ? 'active' : ''}`}
-            title={!shouldShowFullContent ? item.label : ''}
-          >
-            <div className="nav-icon">
-              <IconComponent size={20} />
-              {item.icon && <span className="badge">{item.label}</span>}
-            </div>
-            {shouldShowFullContent && (
-              <span className={`nav-label ${shouldShowFullContent ? 'visible' : 'hidden'}`}>
-                {item.label}
-              </span>
-            )}
-          </button>
-        </Link>
-      </li>
-    );
-  })}
-</ul>
+              return (
+                <li key={item.id}>
+                  <Link to={item.path}>
+                    <button
+                      className={`nav-item ${isActive ? 'active' : ''}`}
+                      title={!shouldShowFullContent ? item.label : ''}
+                    >
+                      <div className="nav-icon">
+                        <IconComponent size={20} />
+                        {item.icon && <span className="badge">{item.label}</span>}
+                      </div>
+                      {shouldShowFullContent && (
+                        <span className={`nav-label ${shouldShowFullContent ? 'visible' : 'hidden'}`}>
+                          {item.label}
+                        </span>
+                      )}
+                    </button>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </nav>
 
         {/* User Profile */}
@@ -150,12 +149,19 @@ export default function Sidebar({
             <div className="user-avatar">
               <User size={shouldShowFullContent ? 20 : 16} />
             </div>
-            {shouldShowFullContent && (
-              <div className={`user-info ${shouldShowFullContent ? 'visible' : 'hidden'}`}>
-                <div className="user-name">{connectedAgent?.firstname + ' ' + connectedAgent?.lastname}</div>
-                <div className="user-role">{connectedAgent?.type}</div>
-              </div>
-            )}
+              {connectedAgent && (
+                <div className={`user-info ${shouldShowFullContent ? 'visible' : 'hidden'}`}>
+                  <div className="user-name">{connectedAgent.firstname + ' ' + connectedAgent.lastname}</div>
+                  <div className="user-role">{connectedAgent.type}</div>
+                </div>
+              )}
+            <button 
+              className="logout-btn"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </div>
@@ -242,59 +248,6 @@ export default function Sidebar({
         .toggle-btn:hover {
           background: #e2e8f0;
           color: #475569;
-        }
-
-        .search-section {
-          padding: 0 16px 20px 16px;
-          border-bottom: 1px solid #e2e8f0;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .search-section.hidden {
-          opacity: 0;
-          transform: translateX(-20px);
-          pointer-events: none;
-        }
-
-        .search-section.visible {
-          opacity: 1;
-          transform: translateX(0);
-          pointer-events: all;
-        }
-
-        .search-box {
-          position: relative;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: #f1f5f9;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          padding: 10px 12px;
-          transition: all 0.2s;
-        }
-
-        .search-box:focus-within {
-          border-color: #667eea;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .search-box svg {
-          color: #64748b;
-          flex-shrink: 0;
-        }
-
-        .search-box input {
-          border: none;
-          background: none;
-          outline: none;
-          flex: 1;
-          font-size: 14px;
-          color: #1e293b;
-        }
-
-        .search-box input::placeholder {
-          color: #94a3b8;
         }
 
         .navigation {
@@ -397,12 +350,8 @@ export default function Sidebar({
           gap: 12px;
           padding: 12px;
           border-radius: 12px;
-          cursor: pointer;
           transition: all 0.2s;
-        }
-
-        .user-profile:hover {
-          background: #f1f5f9;
+          position: relative;
         }
 
         .user-avatar {
@@ -424,6 +373,7 @@ export default function Sidebar({
 
         .user-info {
           min-width: 0;
+          flex: 1;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -453,6 +403,39 @@ export default function Sidebar({
           overflow: hidden;
           text-overflow: ellipsis;
         }
+
+        .logout-btn {
+          width: 36px;
+          height: 36px;
+          border: none;
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: white;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .logout-btn:hover {
+          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .logout-btn:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+        }
+
+        .sidebar.collapsed .logout-btn {
+          width: 32px;
+          height: 32px;
+        }
+
         .content-area {
           flex: 1;
           padding: 32px;

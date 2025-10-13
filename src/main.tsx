@@ -6,6 +6,7 @@ import { WebSocketProvider } from './context/WebSocketProvider'
 import './index.css'
 import { persistor, store } from './stores/store'
 import App from './App'
+import { ConversationProvider } from './context/ConversationContext'
 
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
@@ -17,9 +18,9 @@ if (!rootElement.innerHTML) {
       <Provider store={store}>
         <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
           <WebSocketProvider>
-         
+            <ConversationProvider>
               <App></App>
-           
+            </ConversationProvider>
           </WebSocketProvider>
         </PersistGate>
       </Provider>

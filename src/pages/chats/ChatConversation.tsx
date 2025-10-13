@@ -1,3 +1,4 @@
+import { useConversation } from '@/context/ConversationContext';
 import { AppAgent } from '@/models/AppAgent';
 import ChatDirection from '@/models/ChatDirection';
 import ChatEvent from '@/models/ChatEvent';
@@ -26,8 +27,8 @@ interface ChatConversationsProps {
 export default function ChatConversations({
   conversation ,
   setConversation,
-  conversations ,
-  setConversations,
+  // conversations ,
+  // setConversations,
   ClientInformation ,
   setConnectedAgent,
   connectedAgent
@@ -53,6 +54,10 @@ export default function ChatConversations({
   // Auto-scroll to bottom when messages change
 
 
+  const { conversations, convo, setConversations, setConvo } = useConversation();
+  
+
+
     useEffect(() => {
     if (!socketRefClient.current) {
       socketRefClient.current = io(import.meta.env.VITE_SOCK_JS_WIDGET_URL, {
@@ -70,65 +75,65 @@ export default function ChatConversations({
     const socketAgent = socketRefAgent.current;
   }, []);
 
-  useEffect(() => {
-    console.log("the chat conversation component loaded")
-  // Handle incoming client messages
-  socketRefClient.current?.on('MESSAGE_FROM_CLIENT_TO_AGENT', (message: ChatMessage) => {
-    console.log('New message from client:', message);
+//   useEffect(() => {
+//     console.log("the chat conversation component loaded")
+//   // Handle incoming client messages
+//   socketRefClient.current?.on('MESSAGE_FROM_CLIENT_TO_AGENT', (message: ChatMessage) => {
+//     console.log('New message from client:', message);
     
-    // Only add the message if it belongs to the current conversation
-    if (conversation && message.conversationId === conversation.AppClientID) {
-      const updatedConversation = {
-        ...conversation,
-        messages: [...conversation.messages, message]
-      };
+//     // Only add the message if it belongs to the current conversation
+//     if (conversation && message.conversationId === conversation.AppClientID) {
+//       const updatedConversation = {
+//         ...conversation,
+//         messages: [...conversation.messages, message]
+//       };
 
-      // Update current conversation
-      setConversation(updatedConversation);
+//       // Update current conversation
+//       setConversation(updatedConversation);
       
-      // Update conversations list
-      setConversations(conversations.map(conv => 
-        conv.AppClientID === updatedConversation.AppClientID 
-          ? updatedConversation 
-          : conv
-      ));
-    }
-  });
+//       // Update conversations list
+//       setConversations(conversations.map(conv => 
+//         conv.AppClientID === updatedConversation.AppClientID 
+//           ? updatedConversation 
+//           : conv
+//       ));
+//     }
+//   });
 
-  // Handle incoming agent messages (for multi-agent scenarios)
-  socketRefAgent.current?.on('MESSAGE_FROM_AGENT_TO_CLIENT', (message: ChatMessage) => {
-    console.log('New message from agent:', message);
+//   // Handle incoming agent messages (for multi-agent scenarios)
+//   socketRefAgent.current?.on('MESSAGE_FROM_AGENT_TO_CLIENT', (message: ChatMessage) => {
+//     console.log('New message from agent:', message);
     
-    if (conversation && message.conversationId === conversation.AppClientID) {
-      const updatedConversation = {
-        ...conversation,
-        messages: [...conversation.messages, message]
-      };
+//     if (conversation && message.conversationId === conversation.AppClientID) {
+//       const updatedConversation = {
+//         ...conversation,
+//         messages: [...conversation.messages, message]
+//       };
 
-      setConversation(updatedConversation);
-      setConversations(conversations.map(conv => 
-        conv.AppClientID === updatedConversation.AppClientID 
-          ? updatedConversation 
-          : conv
-      ));
-    }
-  });
+//       setConversation(updatedConversation);
+//       setConversations(conversations.map(conv => 
+//         conv.AppClientID === updatedConversation.AppClientID 
+//           ? updatedConversation 
+//           : conv
+//       ));
+//     }
+//   });
 
-  // Auto-scroll when new messages arrive
-  scrollToBottom();
+//   // Auto-scroll when new messages arrive
+//   scrollToBottom();
 
-  // Cleanup function to remove listeners
-  return () => {
-    socketRefClient.current?.off('MESSAGE_FROM_CLIENT_TO_AGENT');
-    socketRefAgent.current?.off('MESSAGE_FROM_AGENT_TO_CLIENT');
-  };
-}, [conversation, conversations, setConversation, setConversations]);
+//   // Cleanup function to remove listeners
+//   return () => {
+//     socketRefClient.current?.off('MESSAGE_FROM_CLIENT_TO_AGENT');
+//     socketRefAgent.current?.off('MESSAGE_FROM_AGENT_TO_CLIENT');
+//   };
+// }, [conversation, conversations, setConversation, setConversations]);
 
 
 
-  useEffect(() => {
-  console.log("showClientInfo changed:", showClientInfo);
-}, [showClientInfo]);
+//   useEffect(() => {
+//   console.log("showClientInfo changed:", showClientInfo);
+// }, [showClientInfo]);
 
 //   useEffect(() => {
 //   console.log("this is the conncted client ", connectedAgent);
@@ -350,18 +355,17 @@ export default function ChatConversations({
 
       {/* Chat Messages */}
       <div className="chat-messages">
-        <div className="messages-container">
-          {conversation.messages
-            .filter(msg => msg.message && msg.message.trim() !== "")
-            .map((msg , index) => {
-              const isAgent = msg.chatDirection === ChatDirection.FromAgentToClient;
-              return (
+        {conversation.messages
+          .filter(msg => msg.message && msg.message.trim() !== "")
+          .map((msg, index) => {
+            const isAgent = msg.chatEvent === ChatEvent.MessageFromAgentToClient;
+            return (
+              <div key={`msg-${index}`} style={{ marginBottom: '1rem' }}>
                 <div
-                  key={`msg-${index}`}
-                  className={`message-wrapper ${isAgent ? "from-agent" : "from-client"}`}
+                  className={`message-wrapper ${isAgent ? "sent" : "received"}`}
                 >
                   <div
-                    className={`message-bubble ${isAgent ? "agent-bubble" : "client-bubble"}`}
+                    className="message-bubble"
                   >
                     <p className="message-text">{msg.message}</p>
                     <span className="message-time">
@@ -371,10 +375,10 @@ export default function ChatConversations({
                     </span>
                   </div>
                 </div>
-              );
-            })}
-          <div ref={messagesEndRef} />
-        </div>
+              </div>
+            );
+          })}
+        <div ref={messagesEndRef} />
       </div>
 
 

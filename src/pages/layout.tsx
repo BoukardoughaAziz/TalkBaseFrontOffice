@@ -8,27 +8,6 @@ import Cookies from "js-cookie";
 export default function Layout() {
   const [connectedAgent, setConnectedAgent] = useState<AppAgent | null>(null);
 
-
-  useEffect(() => {
-  console.log("++++++++++++++++++++++++++++++")
-  console.log("trying to fetch the user")
-  console.log("++++++++++++++++++++++++++++++")
-  const accessToken = Cookies.get("access_token");
-  const userCookie = Cookies.get("user");
-
-  console.log("Access Token:", accessToken);
-  console.log("User Cookie:", userCookie);
-
-  if (userCookie) {
-    const user = JSON.parse(userCookie);
-    console.log("Decoded User:", user);
-    setConnectedAgent(user);
-    console.log("we have set the connected agent : ", connectedAgent);
-  }
-
-}, []);
-
-
   return (
     <div className="app-container" style={{ display: "flex", height: "100vh" }}>
       {/* Sidebar always visible */}

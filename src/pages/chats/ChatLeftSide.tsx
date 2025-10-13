@@ -2,50 +2,45 @@ import { useEffect, useState } from 'react'
 import { Search, Settings, Plus, MoreHorizontal, MessageSquare, Users, Archive, Star, UserCheck, ToggleRight, User } from 'lucide-react'
 import conversationService from '@/services/Conversation/conversationService'
 import { AppAgent } from '@/models/AppAgent';
+import AgentType from '@/models/AgentType';
+import { Conversation } from '@/models/Conversation';
+import { useConversation } from '@/context/ConversationContext';
 
-// Mock interfaces for the demo
-interface Message {
-  message: string;
-  timestamp?: string;
-}
 
-interface Conversation {
-  AppClientID: string;
-  messages: Message[];
-  isHandledBy_BB?: boolean;
-  lastActive?: string;
-  unreadCount?: number;
-}
 
-interface ChatLeftSideProps {
-  connectedAgent: AppAgent | null;
-}
-
-export default function ChatLeftSide({ connectedAgent }: ChatLeftSideProps) {
+export default function ChatLeftSide() {
   const [search, setSearch] = useState('')
   const [selectedAppClientID, setSelectedAppClientID] = useState<string | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
-  // initialize to mock data (or use [] to start empty and fetch real data in useEffect)
-  const [conversations, setConversations] = useState<Conversation[]>();
-  const [conversation, setConversation] = useState<Conversation | null>(null);
-
-
-  useEffect(() => {
-    console.log("chat left side was mounted")
-    console.log("this is the connected agent id from the chat left side : ", connectedAgent._id)
-    conversationService.getConversationsByAgentId(connectedAgent?._id)
-            .then(conversations => {
-              setConversations(conversations);
-              console.log("Fetched conversations for agent:", conversations);
-            })
-            .catch(error => {
-              console.error("Error fetching conversations:", error);
-            });
-}, []);
+  const {conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent } = useConversation();
 
 
 
+// if (connectedAgent) {
+//       connectedAgent.email = email || '';
+//       connectedAgent.firstname = firstname || '';
+//       connectedAgent.lastname = lastname || '';
+//       connectedAgent._id = id || '';
+//       if (type === "AGENT") {
+//         connectedAgent.type = AgentType.Agent;
+//       } else {
+//         connectedAgent.type = AgentType.Admin;
+//       }
+
+//       // Helper to check if a cookie exists
+//       function hasCookie(name) {
+//         return document.cookie.split(';').some((c) => c.trim().startsWith(name + '='));
+//       }
+
+//       // Only set cookies if they do not exist
+//       if (!hasCookie('user') && !hasCookie('accessToken')) {
+//         document.cookie = `user=${encodeURIComponent(JSON.stringify(connectedAgent))}; path=/;`;
+//         document.cookie = `accessToken=${accessToken}; path=/;`;
+//         setConnectedAgent(connectedAgent);
+//       }
+//         const url = window.location.origin + window.location.pathname;
+//         window.history.replaceState({}, document.title, url);
   
   // safe filter in case conversations is ever undefined
   const filteredConversations = (conversations || []).filter((conversation) =>
@@ -55,7 +50,7 @@ export default function ChatLeftSide({ connectedAgent }: ChatLeftSideProps) {
 
   const handleConversationClick = (conversation: Conversation) => {
     setSelectedAppClientID(conversation.AppClientID)
-    setConversation(conversation)
+    setConvo(conversation)
     console.log('Joining conversation:', conversation.AppClientID)
   }
 
@@ -149,7 +144,7 @@ export default function ChatLeftSide({ connectedAgent }: ChatLeftSideProps) {
           ) : (
             filteredConversations.map((conversation) => {
               const isSelected = selectedAppClientID === conversation.AppClientID
-              const hasUnread = (conversation.unreadCount || 0) > 0
+              // const hasUnread = (conversation.unreadCount || 0) > 0
 
               return (
                 <div
@@ -176,12 +171,12 @@ export default function ChatLeftSide({ connectedAgent }: ChatLeftSideProps) {
                           <span className="bot-badge">BaseBuddy</span>
                         )}
                       </div>
-                      <div className="meta-info">
+                      {/* <div className="meta-info">
                         <span className="time">{getTimeAgo(conversation.lastActive)}</span>
                         {hasUnread && (
                           <span className="unread-badge">{conversation.unreadCount}</span>
                         )}
-                      </div>
+                      </div> */}
                     </div>
                     
                     <div className="last-message">

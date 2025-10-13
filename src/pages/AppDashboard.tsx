@@ -15,41 +15,23 @@ import ChatConversation from './chats/ChatConversation'
 import { ClientInformation } from '@/models/ClientInformation'
 import ClientInformationUI from './ClinetInformation/ClientInformationUI'
 import { io, Socket } from 'socket.io-client';
+import { useConversation } from '@/context/ConversationContext'
+import AgentType from '@/models/AgentType'
 
 export default function AppDashboard() {
   const [activeComponent, setActiveComponent] = useState('Chat')
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const [connectedAgent, setConnectedAgent] = useState<AppAgent | null>(null);
   
   
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [convo, setConvo] = useState<Conversation>();
+  // const [conversations, setConversations] = useState<Conversation[]>([]);
+  // const [convo, setConvo] = useState<Conversation>();
   const [clientInformation, setClientInformation] = useState<ClientInformation>();
   const [showClientInfo, setShowClientInfo] = useState<boolean>(false);
 
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent = useRef<Socket | null>(null);
-
-
-  useEffect(() => {
-  // console.log("++++++++++++++++++++++++++++++")
-  // console.log("trying to fetch the user")
-  // console.log("++++++++++++++++++++++++++++++")
-  const accessToken = Cookies.get("access_token");
-  const userCookie = Cookies.get("user");
-
-  // console.log("Access Token:", accessToken);
-  // console.log("User Cookie:", userCookie);
-
-  if (userCookie) {
-    const user = JSON.parse(userCookie);
-    // console.log("Decoded User:", user);
-    setConnectedAgent(user);
-    console.log("we have set the connected agent : ", connectedAgent);
-  }
-}, []);
-
+  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent } = useConversation();
 
     useEffect(() => {
     if (!socketRefClient.current) {
@@ -90,9 +72,9 @@ export default function AppDashboard() {
   return (
     <div className='hk-wrapper'>
       <div className={`hk-pg-wrapper ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
-        {connectedAgent && (
-          <ChatLeftSide connectedAgent={connectedAgent} />
-        )}
+        {/* {connectedAgent && ( */}
+          <ChatLeftSide />
+        {/* )} */}
       </div>
 
 
