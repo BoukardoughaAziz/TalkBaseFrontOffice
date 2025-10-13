@@ -29,10 +29,6 @@ interface ChatConversationsProps {
 export default function ChatConversations({
   conversation ,
   setConversation,
-  // conversations ,
-  // setConversations,
-  ClientInformation ,
-
 }: ChatConversationsProps) {
   const [input, setInput] = useState('');
   const [callState, setCallState] = useState<'idle' | 'ringing' | 'active'>('idle');
@@ -91,7 +87,11 @@ export default function ChatConversations({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-
+useEffect(() => {
+  socketRefClient.current?.on('MESSAGE_FROM_CLIENT_TO_AGENT', (data) => {
+    console.log("Message from client to agent received:", data);
+  })
+})
 
   useEffect(() => {
     scrollToBottom();
