@@ -84,13 +84,12 @@ useEffect(() => {
   // Set up the listener ONCE when component mounts
   const handleMessageFromClient = (data: any) => {
     console.log("Message from client to agent received:", data);
-    
+    console.log("Updating conversation with new message:", data);
+    console.log("this is the conversation object : ", conversation);
+    console.log("this is the data.identifier : ", data.identifier);
+    console.log("this is the conversation.AppClientID : ", conversation.AppClientID);
     // Update the conversation with the new message
     if (conversation && data.identifier === conversation.AppClientID) {
-      console.log("Updating conversation with new message:", data);
-      console.log("this is the conversation object : ", conversation);
-      console.log("this is the data.identifier : ", data.identifier);
-      console.log("this is the conversation.AppClientID : ", conversation.AppClientID);
       const updatedConversation = {
         ...conversation,
         messages: [...conversation.messages, data]
