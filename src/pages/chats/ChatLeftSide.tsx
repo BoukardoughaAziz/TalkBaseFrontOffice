@@ -33,6 +33,8 @@ export default function ChatLeftSide() {
   const handleConversationClick = (conversation: Conversation) => {
     setSelectedAppClientID(conversation.AppClientID)
     setConvo(conversation)
+    console.log("this is the convo  : ", convo);
+    console.log("this is the conversation  : ", conversation);
     console.log('Joining conversation:', conversation.AppClientID)
   }
 
