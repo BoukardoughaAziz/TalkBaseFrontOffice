@@ -87,7 +87,7 @@ useEffect(() => {
     console.log("Updating conversation with new message:", data);
     console.log("this is the conversation  : ", conversation);
     console.log("this is the data.identifier : ", data.identifier);
-    console.log("this is the conversation.AppClientID : ", conversation.AppClientID);
+    // console.log("this is the conversation.AppClientID : ", conversation.AppClientID);
     console.log("------------------------------------------------");
     console.log("this is the convo  : ", convo);
     console.log("this is the convo.AppClientID : ", convo.AppClientID);
