@@ -82,14 +82,14 @@ useEffect(() => {
   const socketAgent = socketRefAgent.current;
 
   // Set up the listener ONCE when component mounts
-  const handleMessageFromClient = (data: any) => {
+  const handleMessageFromClient = (data: ChatMessage) => {
     console.log("Message from client to agent received:", data);
     
     // Update the conversation with the new message
-    if (conversation && data.conversationId === conversation.AppClientID) {
+    if (convo && data.conversationId === convo.AppClientID) {
       const updatedConversation = {
-        ...conversation,
-        messages: [...conversation.messages, data]
+        ...convo,
+        messages: [...convo.messages, data]
       };
       
       setConversation(updatedConversation);
@@ -108,7 +108,7 @@ useEffect(() => {
   return () => {
     socketClient?.off('MESSAGE_FROM_CLIENT_TO_AGENT', handleMessageFromClient);
   };
-}, []); // ✅ Empty dependency array - runs only once on mount
+}, []); 
 
 
   const scrollToBottom = () => {
