@@ -85,9 +85,12 @@ useEffect(() => {
   const handleMessageFromClient = (data: any) => {
     console.log("Message from client to agent received:", data);
     console.log("Updating conversation with new message:", data);
-    console.log("this is the conversation object : ", conversation);
+    console.log("this is the conversation  : ", conversation);
     console.log("this is the data.identifier : ", data.identifier);
     console.log("this is the conversation.AppClientID : ", conversation.AppClientID);
+    console.log("------------------------------------------------");
+    console.log("this is the convo  : ", convo);
+    console.log("this is the convo.AppClientID : ", convo.AppClientID);
     // Update the conversation with the new message
     if (conversation && data.identifier === conversation.AppClientID) {
       const updatedConversation = {
