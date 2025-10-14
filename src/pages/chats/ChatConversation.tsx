@@ -86,10 +86,10 @@ useEffect(() => {
     console.log("Message from client to agent received:", data);
     
     // Update the conversation with the new message
-    if (convo && data.conversationId === convo.AppClientID) {
+    if (conversation && data.conversationId === conversation.AppClientID) {
       const updatedConversation = {
-        ...convo,
-        messages: [...convo.messages, data]
+        ...conversation,
+        messages: [...conversation.messages, data]
       };
       
       setConversation(updatedConversation);
@@ -305,7 +305,7 @@ useEffect(() => {
               <Info size={18} />
             </button>
           
-          <div className="dropdown-container">
+          {/* <div className="dropdown-container">
             <button 
               className="action-btn"
               onClick={() => setShowMoreOptions(!showMoreOptions)}
@@ -322,7 +322,7 @@ useEffect(() => {
                 <button className="dropdown-item danger">Report</button>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </header>
 
