@@ -104,6 +104,7 @@ if (convo) {
           ? updatedConversation 
           : conv
       ));
+      setConvo(updatedConversation); 
     }
   };
 
@@ -778,28 +779,18 @@ if (convo) {
           .chat-messages {
             flex: 1;
             background: #f8fafc;
-            overflow: hidden;
+            overflow-y: auto;
             position: relative;
           }
 
           .messages-container {
             height: 100%;
-            overflow-y: auto;
             padding: 1rem;
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
           }
 
-
-        .messages-container {
-          height: 100%;
-          overflow-y: auto;
-          padding: 1rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-        }
 
         .messages-container::-webkit-scrollbar {
           width: 4px;
