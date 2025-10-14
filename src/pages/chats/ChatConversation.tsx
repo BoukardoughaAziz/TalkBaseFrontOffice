@@ -59,8 +59,7 @@ export default function ChatConversations({
   });
 
   const { conversations, convo, setConversations, setConvo } = useConversation();
-  const { convo: conversation, setConvo: setConversation } = useConversation();
-
+  
   if (showClientInfo) {
     console.log("this is the current state of showClientInfo ", showClientInfo)
   }
