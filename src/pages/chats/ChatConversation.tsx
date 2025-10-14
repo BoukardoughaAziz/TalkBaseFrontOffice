@@ -81,7 +81,6 @@ useEffect(() => {
   const socketClient = socketRefClient.current;
   const socketAgent = socketRefAgent.current;
 
-  // Set up the listener ONCE when component mounts
   const handleMessageFromClient = (data: any) => {
     console.log("Message from client to agent received:", data);
     console.log("this is the conversation  : ", conversation);

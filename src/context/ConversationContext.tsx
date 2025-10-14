@@ -123,6 +123,10 @@ useEffect(() => {
   }
 }, [connectedAgent, token]); // This runs whenever connectedAgent or token changes
 
+if (convo) {
+  console.log("Current conversation:", convo);
+}
+
   return (
     <ConversationContext.Provider
       value={{
