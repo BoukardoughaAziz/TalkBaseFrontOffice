@@ -43,7 +43,7 @@ export default function ChatConversations({
   const inputRef = useRef<HTMLInputElement>(null);
 
 
-  const {  connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo } = useConversation();
+  const { connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo } = useConversation();
 
 
   const socketRefClient = useRef<Socket | null>(null);

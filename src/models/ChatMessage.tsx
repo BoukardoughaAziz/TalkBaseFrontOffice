@@ -41,7 +41,7 @@ export class ChatMessage {
   chatEvent?: ChatEvent
   senderType?:SenderType
   senderId: string 
-  messageRecation?: MessageReaction
+  messageRecations?: MessageReaction
   conversationId?:string
   editedAt?: Date
   timestamp?:Date
