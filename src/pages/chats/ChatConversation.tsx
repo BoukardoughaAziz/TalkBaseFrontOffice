@@ -26,10 +26,7 @@ interface ChatConversationsProps {
 }
 
 
-export default function ChatConversations({
-  conversation ,
-  setConversation,
-}: ChatConversationsProps) {
+export default function ChatConversations() {
   const [input, setInput] = useState('');
   const [callState, setCallState] = useState<'idle' | 'ringing' | 'active'>('idle');
   const [callType, setCallType] = useState<'audio' | 'video' | null>(null);
@@ -46,20 +43,21 @@ export default function ChatConversations({
   const { connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo } = useConversation();
 
 
+  const { conversations, convo, setConversations, setConvo } = useConversation();
+  const { convo: conversation, setConvo: setConversation } = useConversation();
+
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent  = useRef<Socket | null>(null);
   // Auto-scroll to bottom when messages change
   const [formData, setFormData] = useState<ClientInformation>({
     name: '',
-    identifier: conversation?.AppClientID || '',
+    identifier: convo?.AppClientID || '',
     email: '',
     phoneNumber: '',
     jobTitle: '',
     notes: '',
   });
 
-  const { conversations, convo, setConversations, setConvo } = useConversation();
-  
   if (showClientInfo) {
     console.log("this is the current state of showClientInfo ", showClientInfo)
   }
@@ -87,10 +85,8 @@ if (convo) {
     console.log("Message from client to agent received:", data);
     console.log("this is the conversation  : ", conversation);
     console.log("this is the data.identifier : ", data.identifier);
-    // console.log("this is the conversation.AppClientID : ", conversation.AppClientID);
     console.log("------------------------------------------------");
     console.log("this is the convo  : ", convo);
-    console.log("this is the convo.AppClientID : ", convo.AppClientID);
     // Update the conversation with the new message
     if (conversation && data.identifier === conversation.AppClientID) {
       const updatedConversation = {
@@ -104,7 +100,6 @@ if (convo) {
           ? updatedConversation 
           : conv
       ));
-      setConvo(updatedConversation); 
     }
   };
 
