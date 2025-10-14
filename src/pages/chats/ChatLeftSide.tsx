@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Search, Settings, Plus, MoreHorizontal, MessageSquare, Users, Archive, Star, UserCheck, ToggleRight, User, ChevronDown, Clock, Check, CheckCheck } from 'lucide-react'
 import conversationService from '@/services/Conversation/conversationService'
 import { AppAgent } from '@/models/AppAgent';
 import AgentType from '@/models/AgentType';
 import { Conversation } from '@/models/Conversation';
 import { useConversation } from '@/context/ConversationContext';
+import { io, Socket } from 'socket.io-client';
 
 export default function ChatLeftSide() {
   const [search, setSearch] = useState('')
@@ -12,8 +13,9 @@ export default function ChatLeftSide() {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'archived'>('all')
-  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent } = useConversation();
-
+  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent,setShowClientInfo } = useConversation();
+  const socketRefClient = useRef<Socket | null>(null);
+  const socketRefAgent = useRef<Socket | null>(null);
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -26,21 +28,56 @@ export default function ChatLeftSide() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
+
+      useEffect(() => {
+    if (!socketRefClient.current) {
+      socketRefClient.current = io(import.meta.env.VITE_SOCK_JS_WIDGET_URL, {
+        transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
+      });
+    }
+
+    if (!socketRefAgent.current) {
+      socketRefAgent.current = io(import.meta.env.VITE_SOCK_JS_CALL_CENTER_URL, {
+        transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
+      });
+    }
+
+    const socketClient = socketRefClient.current;
+    const socketAgent = socketRefAgent.current;
+  }, []);
+
   const filteredConversations = (conversations || []).filter((conversation) =>
     conversation.AppClientID.toLowerCase().includes(search.toLowerCase())
   )
 
   const handleConversationClick = (conversation: Conversation) => {
     setSelectedAppClientID(conversation.AppClientID)
-    setConvo(conversation)
     console.log("this is the convo  : ", convo);
     console.log("this is the conversation  : ", conversation);
     console.log('Joining conversation:', conversation.AppClientID)
+    setConvo(conversation)
+    setShowClientInfo(false)
   }
 
   const formatUsername = (username: string) => {
     return username.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
+
+
+  socketRefClient.current?.on('AConversationWillBeHandledByAgent', (conversationId) => {
+    console.log("No More AI For This Conversation",conversationId)
+  })
+  socketRefClient.current?.on('ConversationStarted', (NewConversation, AppAgentID) => {
+    console.log("*************************************************")
+    console.log("A New Conversation Was Added", NewConversation)
+    console.log("This is the Agent handling it", AppAgentID)
+    console.log("*************************************************")
+    setConversations(prev => {
+      // Prevent duplicates by AppClientID
+      if (prev?.some(c => c.AppClientID === NewConversation.AppClientID)) return prev
+      return prev ? [NewConversation, ...prev] : [NewConversation]
+    })
+  })
 
   const getTimeAgo = (lastActive?: string) => {
     if (!lastActive) return 'just now'

@@ -86,6 +86,8 @@ export default function Sidebar({
     return (first + last).toUpperCase() || 'U';
   };
 
+
+  
   return (
     <>
       <div 
@@ -137,10 +139,10 @@ export default function Sidebar({
         {/* Status Indicator */}
         {shouldShowFullContent && (
           <div className="status-section">
-            <div className="status-indicator">
+            {/* <div className="status-indicator">
               <Activity size={14} className="status-icon" />
               <span className="status-text">All Systems Operational</span>
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -223,12 +225,6 @@ export default function Sidebar({
             </button>
           </div>
 
-          {/* Version Info */}
-          {shouldShowFullContent && (
-            <div className="version-info">
-              <span>Version 2.0.1</span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -310,7 +306,7 @@ export default function Sidebar({
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #667eea 0%, 100%);
           padding: 4px;
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }

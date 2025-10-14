@@ -10,7 +10,7 @@ interface ConversationContextType {
   user: AppAgent | null;
   token: string | null;
   conversations: Conversation[];
-  convo: Conversation | undefined;
+  convo: Conversation ;
   connectedAgent: AppAgent | null;
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
   setConvo: React.Dispatch<React.SetStateAction<Conversation | undefined>>;
@@ -124,7 +124,7 @@ useEffect(() => {
 }, [connectedAgent, token]); // This runs whenever connectedAgent or token changes
 
 if (convo) {
-  console.log("Current conversation:", convo);
+  console.log("convo has changed :", convo);
 }
 
   return (

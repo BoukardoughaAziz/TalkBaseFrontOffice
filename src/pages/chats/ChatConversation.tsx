@@ -81,7 +81,7 @@ useEffect(() => {
   const socketClient = socketRefClient.current;
   const socketAgent = socketRefAgent.current;
 if (convo) {
-  console.log("Current conversation:", convo);
+  console.log("convo has changed---chatconversation :", convo);
 }
   const handleMessageFromClient = (data: any) => {
     console.log("Message from client to agent received:", data);
@@ -92,16 +92,25 @@ if (convo) {
     // Update the conversation with the new message
     if (conversation && data.identifier === conversation.AppClientID) {
       const updatedConversation = {
-        ...conversation,
-        messages: [...conversation.messages, data]
+      ...conversation,
+      messages: [...conversation.messages, data]
       };
       
       setConversation(updatedConversation);
       setConversations(conversations.map(conv => 
-        conv.AppClientID === data.conversationId 
-          ? updatedConversation 
-          : conv
+      conv.AppClientID === data.conversationId 
+        ? updatedConversation 
+        : conv
       ));
+    } else {
+      // Find the conversation and add the message to it instantly
+      setConversations(prevConversations =>
+      prevConversations.map(conv =>
+        conv.AppClientID === data.conversationId
+        ? { ...conv, messages: [...conv.messages, data] }
+        : conv
+      )
+      );
     }
   };
 
