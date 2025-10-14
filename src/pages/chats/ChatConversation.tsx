@@ -26,7 +26,10 @@ interface ChatConversationsProps {
 }
 
 
-export default function ChatConversations() {
+export default function ChatConversations({
+  conversation ,
+  setConversation,
+}: ChatConversationsProps) {
   const [input, setInput] = useState('');
   const [callState, setCallState] = useState<'idle' | 'ringing' | 'active'>('idle');
   const [callType, setCallType] = useState<'audio' | 'video' | null>(null);
@@ -43,20 +46,20 @@ export default function ChatConversations() {
   const { connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo } = useConversation();
 
 
-  const { conversations, convo, setConversations, setConvo } = useConversation();
-  const { convo: conversation, setConvo: setConversation } = useConversation();
-
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent  = useRef<Socket | null>(null);
   // Auto-scroll to bottom when messages change
   const [formData, setFormData] = useState<ClientInformation>({
     name: '',
-    identifier: convo?.AppClientID || '',
+    identifier: conversation?.AppClientID || '',
     email: '',
     phoneNumber: '',
     jobTitle: '',
     notes: '',
   });
+
+  const { conversations, convo, setConversations, setConvo } = useConversation();
+  const { convo: conversation, setConvo: setConversation } = useConversation();
 
   if (showClientInfo) {
     console.log("this is the current state of showClientInfo ", showClientInfo)

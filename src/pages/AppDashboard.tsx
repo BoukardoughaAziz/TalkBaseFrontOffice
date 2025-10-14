@@ -74,7 +74,16 @@ export default function AppDashboard() {
 
             <div className={`hk-pg-wrapper ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
 
-          <ChatConversation/> 
+          <ChatConversation
+            conversation={convo}
+            setConversation={setConvo}
+            conversations={conversations}
+            setConversations={setConversations}
+            ClientInformation={clientInformation}
+            setClientInformation={setClientInformation}
+            setConnectedAgent={setConnectedAgent}
+            connectedAgent={connectedAgent}
+          /> 
               
       </div>
       {/* {showClientInfo && (
