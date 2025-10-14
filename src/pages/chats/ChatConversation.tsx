@@ -80,7 +80,9 @@ useEffect(() => {
 
   const socketClient = socketRefClient.current;
   const socketAgent = socketRefAgent.current;
-
+if (convo) {
+  console.log("Current conversation:", convo);
+}
   const handleMessageFromClient = (data: any) => {
     console.log("Message from client to agent received:", data);
     console.log("this is the conversation  : ", conversation);
