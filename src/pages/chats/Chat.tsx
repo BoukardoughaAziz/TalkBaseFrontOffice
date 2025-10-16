@@ -149,34 +149,7 @@ export default function Chat() {
     const socketAgent = socketRefAgent.current;
     const socketClient = socketRefClient.current;
 
-    socketAgent.once("me", (id) => {
-      console.log("Socket ID from server:", id);
-      setMe(id);
 
-      axios.post(`${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/update-socket-id`, {
-        agentId: connectedAgent?._id,
-        socketId: id,
-      }).catch((err) => {
-        console.error("Failed to update socket id:", err);
-      });
-
-      const cookies = document.cookie.split('; ').reduce((acc, current) => {
-        const [key, value] = current.split('=');
-        acc[key] = value;
-        return acc;
-      }, {} as Record<string, string>);
-
-      console.log("Parsed cookies:", cookies);
-
-      const userJson = cookies['user'];
-      if (userJson) {
-        const user = JSON.parse(decodeURIComponent(userJson));
-        console.log("Logged in user:", user);
-        user.SocketId = id;
-        setConnectedAgent(user);
-      }
-
-    }); 
 
     
   if(connectedAgent){

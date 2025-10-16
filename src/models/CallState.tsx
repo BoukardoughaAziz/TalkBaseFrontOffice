@@ -1,8 +1,9 @@
 enum CallState {
     InCall = "InCall",
-    ended = "ended",
     IncomingCall = "IncomingCall",
-    Idle = "idle",
+    Idle = "Idle",
+    StartedCall = "StartedCall",
+
 }
   export default CallState;
   

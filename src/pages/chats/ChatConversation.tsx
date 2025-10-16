@@ -7,12 +7,13 @@ import { ClientInformation } from '@/models/ClientInformation';
 import { Conversation } from '@/models/Conversation';
 import { SenderType } from '@/models/SenderType';
 import conversationService from '@/services/Conversation/conversationService';
-import { ChevronLeft, FileText, Image, Info, MapPin, MoreVertical, Paperclip, Phone, PhoneCall, Send, Smile, Users, Video, VideoIcon } from 'lucide-react';
+import { ChevronLeft, FileText, Image, Info, LogOut, MapPin, MoreVertical, Paperclip, Phone, PhoneCall, Send, Smile, Users, Video, VideoIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import ClientInformationUI from '../ClinetInformation/ClientInformationUI';
 import ClientInformationService from '@/services/Client Informations/ClientInformationService';
-
+import CallState from '@/models/CallState';
+import Peer from "simple-peer"
 
 interface ChatConversationsProps {
   conversation: Conversation | null;
@@ -31,20 +32,31 @@ export default function ChatConversations({
   setConversation,
 }: ChatConversationsProps) {
   const [input, setInput] = useState('');
-  const [callState, setCallState] = useState<'idle' | 'ringing' | 'active'>('idle');
+  const [callState, setCallState] = useState<CallState>(CallState.Idle);
   const [callType, setCallType] = useState<'audio' | 'video' | null>(null);
   const [showAttachments, setShowAttachments] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [incomingCall, setIncomingCall] = useState<{from: string, type: 'audio' | 'video'} | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const myVideo = useRef<HTMLVideoElement>(null);
-  const userVideo = useRef<HTMLVideoElement>(null);
+  // const myVideo = useRef<HTMLVideoElement>(null);
+  // const userVideo = useRef<HTMLVideoElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+	// const myVideo = useRef()
+	// const userVideo = useRef()
 
-  const { connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo } = useConversation();
+  const myVideo = useRef<HTMLVideoElement>(null);
+  const userVideo = useRef<HTMLVideoElement>(null);
+  const connectionRef = useRef<any>(null);
 
+  const [ receivingCall, setReceivingCall ] = useState(false)
+	const [ caller, setCaller ] = useState("")
+	const [ callerSignal, setCallerSignal ] = useState()
+	const [ name, setName ] = useState("")
+
+  const { connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo,socketid } = useConversation();
+	const [ stream, setStream ] = useState()
 
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent  = useRef<Socket | null>(null);
@@ -63,6 +75,30 @@ export default function ChatConversations({
   if (showClientInfo) {
     console.log("this is the current state of showClientInfo ", showClientInfo)
   }
+
+  // Refs to keep latest values for socket handlers (avoid stale closures)
+  const connectedAgentRef = useRef(connectedAgent);
+  const socketidRef = useRef(socketid);
+  const callstateRef = useRef(callState);
+  
+  useEffect(() => {
+    connectedAgentRef.current = connectedAgent;
+  }, [connectedAgent]);
+  
+  useEffect(() => {
+    socketidRef.current = socketid;
+  }, [socketid]);
+
+  useEffect(() => {
+    connectedAgentRef.current = connectedAgent;
+  }, [connectedAgent]);
+
+  // useEffect(() => {
+  //   callstateRef.current = callState;
+  //   if (callstateRef) {
+  //     console.log("this is the current callstate",callstateRef)
+  //   }
+  // }, [callState,callstateRef]);
 
 
 useEffect(() => {
@@ -117,11 +153,104 @@ if (convo) {
   // Add listener
   socketClient?.on('MESSAGE_FROM_CLIENT_TO_AGENT', handleMessageFromClient);
 
+// In your socket listener, update the callUser handler:
+
+socketClient.on("callUser", (data) => { 
+  if (data.to === socketidRef.current) {
+    console.log("this call is for me!!!!!")
+    console.log("this is the incoming data : ", data);
+    
+    // Set incomingCall state with call data
+    setIncomingCall({
+      from: data.from,
+      type: data.calltype || 'audio' // Make sure this matches what you're sending
+    });
+    
+    // Set all other related states
+    setReceivingCall(true);
+    setCaller(data.from);
+    setName(data.name || 'Unknown Caller');
+    setCallerSignal(data.signal);
+    setCallState(() => CallState.IncomingCall);
+    setCallType(() => data.calltype || 'audio');
+    console.log("**************************************")
+    console.log("this is the caller socketid",caller)
+    console.log("**************************************")
+    
+    console.log("Call state set to ",callState);
+    console.log("Incoming call data:", { from: data.from, type: data.calltype });
+  } else {
+    console.log("this call isn't for me!!!!!");
+  }
+});
+  socketClient?.on('MESSAGE_FROM_CLIENT_TO_AGENT', handleMessageFromClient);
+
   // Cleanup function - CRITICAL to prevent duplicate listeners
   return () => {
     socketClient?.off('MESSAGE_FROM_CLIENT_TO_AGENT', handleMessageFromClient);
   };
 }, []); 
+
+
+const answerCall = async () => {
+  try {
+    console.log("ANSWERING CALL");
+    
+    // Get the media stream FIRST
+    const localStream = await navigator.mediaDevices.getUserMedia({ 
+      video: callType === 'video',
+      audio: true 
+    });
+    
+    // setStream(localStream);
+    
+    // Set your local video
+    if (myVideo.current) {
+      console.log("my video is working")
+      myVideo.current.srcObject = localStream;
+    }
+    
+    // Create peer connection with the stream
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream: localStream
+    });
+    
+    peer.on("signal", (data) => {
+      console.log("this is the signal data", data);
+      socketRefClient.current?.emit("answercall", { 
+        signal: data,
+        to: caller 
+      });
+    });
+    
+    peer.on("stream", (remoteStream) => {
+      console.log("Received remote stream");
+      if (userVideo.current) {
+        userVideo.current.srcObject = remoteStream;
+      }
+    });
+    
+    // Signal the caller with their offer
+    if (callerSignal) {
+      console.log("Applying caller signal", callerSignal);
+      peer.signal(callerSignal);
+    }
+    
+    connectionRef.current = peer;
+    setCallState(CallState.InCall);
+    
+  } catch (error) {
+    console.error("Error answering call:", error);
+  }
+};
+
+  const handleEndCall = () => {
+    console.log("ENDING CALL")
+    setCallState(CallState.Idle);
+  }
+
 
 
   const scrollToBottom = () => {
@@ -131,11 +260,7 @@ if (convo) {
 
   useEffect(() => {
     scrollToBottom();
-    ClientInformationService.findClientInfoByIdentifier(conversation?.AppClientID || '').then((data) => {
-      setFormData(data);
-      setClientInformation(data);
-    });
-  }, [conversation?.AppClientID, setClientInformation]);
+  }, []);
 
 
   const handleSendMessage = () => {
@@ -187,15 +312,11 @@ if (convo) {
 
   const startCall = (type: 'audio' | 'video') => {
     setCallType(type);
-    setCallState('ringing');
-    // Mock call logic here
-    setTimeout(() => {
-      setCallState('active');
-    }, 2000);
+    setCallState(CallState.StartedCall);
   };
 
   const endCall = () => {
-    setCallState('idle');
+    setCallState(CallState.Idle);
     setCallType(null);
     setIncomingCall(null);
   };
@@ -226,33 +347,7 @@ if (convo) {
 
   return (
     <div className="chat-container">
-      {/* Incoming Call Modal */}
-      {callState === 'ringing' && incomingCall && (
-        <div className="call-modal-overlay">
-          <div className="call-modal">
-            <div className="call-avatar">
-              <img 
-                src={`https://avatar.iran.liara.run/username?username=${conversation.AppClientID}`}
-                alt={conversation.AppClientID}
-              />
-            </div>
-            <h3>Incoming {incomingCall.type === 'video' ? 'Video' : 'Audio'} Call</h3>
-            <p>From: {formatUsername(conversation.AppClientID)}</p>
-            
-            <div className="call-actions">
-              <button className="call-button reject" onClick={endCall}>
-                <PhoneCall size={24} />
-              </button>
-              <button className="call-button accept" onClick={() => setCallState('active')}>
-                {incomingCall.type === 'video' ? <VideoIcon size={24} /> : <Phone size={24} />}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Video Call Overlay */}
-      {callState === 'active' && callType === 'video' && (
+      {callState === CallState.InCall && callType === 'video' && (
         <div className="video-call-overlay">
           <div className="video-container">
             <video ref={userVideo} autoPlay playsInline className="remote-video" />
@@ -266,6 +361,57 @@ if (convo) {
           </div>
         </div>
       )}
+
+
+            {callState === CallState.IncomingCall && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <div className="modal-icon">
+                <Phone size={24} color='blue'/>
+              </div>
+              <h3>Incoming call</h3>
+              <p>"INSERT CALLER NAME"</p>
+              <p>THIS IS A "{callType}"" call</p>
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="modal-btn btn-success"
+                onClick={answerCall}
+              >
+                Answer
+              </button>
+              <button 
+                className="modal-btn confirm"
+                onClick={handleEndCall}
+              >
+                Deny
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+      {callState === CallState.InCall && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+              <div className="video">
+                <video playsInline ref={userVideo} autoPlay style={{ width: "300px"}} />:
+              </div>
+            <div className="modal-actions">
+              <button 
+                className="modal-btn confirm"
+                onClick={handleEndCall}
+              >
+                Hangup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Chat Header */}
       <header className="chat-header">
@@ -281,14 +427,14 @@ if (convo) {
                 alt={conversation.AppClientID}
                 className="user-avatar"
               />
-              <div className={`status-indicator ${callState === 'active' ? 'in-call' : 'online'}`}></div>
+              <div className={`status-indicator ${callState === CallState.InCall ? 'in-call' : 'online'}`}></div>
             </div>
             
             <div className="user-details">
               <h3 className="user-name">{formatUsername(conversation.AppClientID)}</h3>
               <p className="user-status">
-                {callState === 'active' ? 'In Call' : 
-                 callState === 'ringing' ? (incomingCall ? 'Incoming Call' : 'Calling...') : 
+                {callState === CallState.InCall ? 'In Call' : 
+                 callState === CallState.IncomingCall ? (incomingCall ? 'Incoming Call' : 'Calling...') : 
                   'Online'}
               </p>
             </div>
@@ -297,16 +443,16 @@ if (convo) {
         
         <div className="header-actions">
           <button 
-            className={`action-btn ${callState === 'active' && callType === 'audio' ? 'active' : ''}`}
-            onClick={() => callState === 'idle' ? startCall('audio') : endCall()}
+            className={`action-btn ${callState === CallState.InCall && callType === 'audio' ? 'active' : ''}`}
+            onClick={() => callState === CallState.Idle ? startCall('audio') : endCall()}
             disabled={!!incomingCall}
           >
             <Phone size={18} />
           </button>
           
           <button 
-            className={`action-btn ${callState === 'active' && callType === 'video' ? 'active' : ''}`}
-            onClick={() => callState === 'idle' ? startCall('video') : endCall()}
+            className={`action-btn ${callState === CallState.InCall && callType === 'video' ? 'active' : ''}`}
+            onClick={() => callState === CallState.Idle ? startCall('video') : endCall()}
             disabled={!!incomingCall}
           >
             <Video size={18} />
@@ -317,25 +463,6 @@ if (convo) {
             >
               <Info size={18} />
             </button>
-          
-          {/* <div className="dropdown-container">
-            <button 
-              className="action-btn"
-              onClick={() => setShowMoreOptions(!showMoreOptions)}
-            >
-              <MoreVertical size={18} />
-            </button>
-            
-            {showMoreOptions && (
-              <div className="dropdown-menu">
-                <button className="dropdown-item">Mute notifications</button>
-                <button className="dropdown-item">Clear chat</button>
-                <button className="dropdown-item">Block user</button>
-                <div className="dropdown-divider"></div>
-                <button className="dropdown-item danger">Report</button>
-              </div>
-            )}
-          </div> */}
         </div>
       </header>
 
@@ -431,6 +558,7 @@ if (convo) {
           </button>
         </div>
       </footer>
+
 
       <style >{`
         .chat-container {

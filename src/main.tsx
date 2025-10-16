@@ -17,11 +17,11 @@ if (!rootElement.innerHTML) {
     <BrowserRouter>
       <Provider store={store}>
         <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-          <WebSocketProvider>
-            <ConversationProvider>
-              <App></App>
-            </ConversationProvider>
-          </WebSocketProvider>
+          <ConversationProvider>
+            <WebSocketProvider>
+              <App />
+            </WebSocketProvider>
+          </ConversationProvider>
         </PersistGate>
       </Provider>
     </BrowserRouter>

@@ -1,10 +1,11 @@
 import { AppAgent } from "@/models/AppAgent";
 import { Conversation } from "@/models/Conversation";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import Cookies from "js-cookie";
 import conversationService from "@/services/Conversation/conversationService";
 import AgentType from "@/models/AgentType";
 import { ClientInformation } from "@/models/ClientInformation";
+import { io, Socket } from "socket.io-client";
 
 interface ConversationContextType {
   user: AppAgent | null;
@@ -19,6 +20,8 @@ interface ConversationContextType {
   clientInformation: ClientInformation | undefined;
   setClientInformation: React.Dispatch<React.SetStateAction<ClientInformation | undefined>>;
   setShowClientInfo: React.Dispatch<React.SetStateAction<boolean>>;
+  socketid: string | null;
+  setSocketid: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const ConversationContext = createContext<ConversationContextType | null>(null);
@@ -31,9 +34,16 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [connectedAgent, setConnectedAgent] = useState<AppAgent | null>(null);
   const [clientInformation, setClientInformation] = useState<ClientInformation>();
   const [showClientInfo, setShowClientInfo] = useState<boolean>(false);
-// Initialize from cookies on first mount
-useEffect(() => {
-    
+  const [socketid, setSocketid] = useState<string | null>(null);
+  const [me, setMe] = useState("");
+  const socketRefAgent = useRef<Socket | null>(null);
+  const socketRefClient = useRef<Socket | null>(null);
+  
+
+  
+  
+  
+  useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   if (params.toString()) {
     console.log("if part")
@@ -105,6 +115,59 @@ useEffect(() => {
       
 }, []);
 
+
+
+
+    useEffect(() => {
+      if (!connectedAgent) return;
+
+      if (!socketRefAgent.current) {
+        socketRefAgent.current = io(import.meta.env.VITE_SOCK_JS_CALL_CENTER_URL, {
+          transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
+        });
+      }
+
+      if (!socketRefClient.current) {
+        socketRefClient.current = io(import.meta.env.VITE_SOCK_JS_WIDGET_URL, {
+          transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
+        });
+      }
+
+      const socketAgent = socketRefAgent.current;
+      const socketClient = socketRefClient.current;
+
+      socketAgent.once('me', (id) => {
+        console.log("received socket 'me' id:", id);
+        setMe(id);
+        console.log("this is the connected agent", connectedAgent);
+
+        console.log("agent id : ", connectedAgent._id);
+        console.log("agent _id : ", id);
+
+        // Call backend to update the agent's socket id
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/CallCenterAuthController/update-socket-id`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            agentId: connectedAgent._id,
+            socketId: id,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Socket ID updated on backend:", data);
+            setSocketid(id);
+          })
+          .catch((err) => {
+            console.error("Failed to update socket ID:", err);
+          });
+      });
+
+    }, [connectedAgent, token]);
+
 // Add a separate useEffect to log when connectedAgent changes
 useEffect(() => {
   console.log("Connected agent updated:", connectedAgent);
@@ -123,10 +186,6 @@ useEffect(() => {
   }
 }, [connectedAgent, token]); // This runs whenever connectedAgent or token changes
 
-if (convo) {
-  console.log("convo has changed :", convo);
-}
-
   return (
     <ConversationContext.Provider
       value={{
@@ -141,7 +200,9 @@ if (convo) {
         showClientInfo,
         setClientInformation,
         setShowClientInfo,
-        clientInformation
+        clientInformation,
+        socketid, 
+        setSocketid
       }}
     >
       {children}

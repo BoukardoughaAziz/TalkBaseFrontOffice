@@ -56,7 +56,26 @@ export default function Sidebar({
 
   const shouldShowFullContent = !isCollapsed || isHovered
   const location = useLocation();
-  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent } = useConversation();
+
+  // call useConversation safely: if the provider is missing, fall back to defaults
+  let conversations: any[] = [];
+  let convo: any = null;
+  let setConversations: any = () => {};
+  let setConvo: any = () => {};
+  let connectedAgent = null as any;
+  let setConnectedAgent: any = () => {};
+  try {
+    const ctx = useConversation();
+    conversations = ctx.conversations;
+    convo = ctx.convo;
+    setConversations = ctx.setConversations;
+    setConvo = ctx.setConvo;
+    connectedAgent = ctx.connectedAgent;
+    setConnectedAgent = ctx.setConnectedAgent;
+  } catch (e) {
+    // ConversationProvider not present; component will render with defaults
+    // console.warn('ConversationProvider missing for Sidebar');
+  }
 
   const handleLogout = () => {
     // Clear all cookies

@@ -83,8 +83,7 @@ export default function AppDashboard() {
             setClientInformation={setClientInformation}
             setConnectedAgent={setConnectedAgent}
             connectedAgent={connectedAgent}
-          /> 
-              
+          />      
       </div>
       {/* {showClientInfo && (
         <div className="client-info-panel">
