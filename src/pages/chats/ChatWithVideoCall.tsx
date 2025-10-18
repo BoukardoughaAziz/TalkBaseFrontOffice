@@ -154,23 +154,23 @@ export default function ChatWithVideoCall({ setCallState,callState, me, setMe }:
   }
 
 const leaveCall = () => {
-  console.log("leaving the call");
-  setCallState(CallState.ended);
+  // console.log("leaving the call");
+  // setCallState(CallState.ended);
 
-  // Stop camera & microphone
-  if (stream) {
-    stream.getTracks().forEach((track) => track.stop());
-  }
-
-  // Destroy peer connection
-  if (connectionRef.current) {
-    connectionRef.current.destroy();
-  }
-
-  // Optional: callback for parent component
-  // if (onEndCall) {
-  //   onEndCall();
+  // // Stop camera & microphone
+  // if (stream) {
+  //   stream.getTracks().forEach((track) => track.stop());
   // }
+
+  // // Destroy peer connection
+  // if (connectionRef.current) {
+  //   connectionRef.current.destroy();
+  // }
+
+  // // Optional: callback for parent component
+  // // if (onEndCall) {
+  // //   onEndCall();
+  // // }
 }
 
 
