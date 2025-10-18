@@ -59,8 +59,8 @@ const routesConfig = [
      roles: ['ADMIN', 'AGENT'],
   },
   {
-    path: '/analytics',       // ✅ add leading slash
-    component: 'GoogleLookerDashboard',  // ✅ must match ALL_COMPONENTS key
+    path: '/analytics',       
+    component: 'GoogleLookerDashboard',  
     label:'Analytics',   
     isAGap: false,
     isActive: true,

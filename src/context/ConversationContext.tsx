@@ -11,6 +11,8 @@ interface ConversationContextType {
   user: AppAgent | null;
   token: string | null;
   conversations: Conversation[];
+  conversation: Conversation | null;
+  setConversation: React.Dispatch<React.SetStateAction<Conversation | undefined>>;
   convo: Conversation ;
   connectedAgent: AppAgent | null;
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
@@ -31,6 +33,7 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [token, setToken] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [convo, setConvo] = useState<Conversation>();
+  const [conversation, setConversation] = useState<Conversation>();
   const [connectedAgent, setConnectedAgent] = useState<AppAgent | null>(null);
   const [clientInformation, setClientInformation] = useState<ClientInformation>();
   const [showClientInfo, setShowClientInfo] = useState<boolean>(false);
@@ -202,7 +205,9 @@ useEffect(() => {
         setShowClientInfo,
         clientInformation,
         socketid, 
-        setSocketid
+        setSocketid,
+        conversation,
+        setConversation
       }}
     >
       {children}

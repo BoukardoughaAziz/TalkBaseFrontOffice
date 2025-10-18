@@ -13,7 +13,7 @@ export default function ChatLeftSide() {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'archived'>('all')
-  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent,setShowClientInfo } = useConversation();
+  const { conversations, convo, setConversations, setConvo, connectedAgent, setConnectedAgent,setShowClientInfo,conversation,setConversation } = useConversation();
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent = useRef<Socket | null>(null);
   // Close dropdowns when clicking outside
@@ -56,8 +56,10 @@ export default function ChatLeftSide() {
     console.log("this is the conversation  : ", conversation);
     console.log('Joining conversation:', conversation.AppClientID)
     setConvo(conversation)
+    setConversation(conversation)
     setShowClientInfo(false)
   }
+  if (convo) {console.log("this is the current convo",convo)}
 
   const formatUsername = (username: string) => {
     return username.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())

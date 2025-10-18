@@ -22,13 +22,13 @@ import conversationService from '@/services/Conversation/conversationService';
 import { Conversation } from '@/models/Conversation';
 import Cookies from 'js-cookie';
 import { useConversation } from '@/context/ConversationContext';
+import AgentType from '@/models/AgentType';
 
 interface SidebarProps {
   isCollapsed?: boolean;
   isHovered?: boolean;
   toggleSidebar?: () => void;
   setIsHovered?: (hovered: boolean) => void;
-  connectedAgent?: AppAgent | null;
 }
 
 export default function Sidebar({ 
@@ -40,7 +40,8 @@ export default function Sidebar({
   const [internalCollapsed, setInternalCollapsed] = useState(false)
   const [internalHovered, setInternalHovered] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  
+  const { connectedAgent } = useConversation();
+
   const navigate = useNavigate();
 
   // Use props if provided, otherwise use internal state
@@ -50,8 +51,11 @@ export default function Sidebar({
   const setIsHovered = propSetIsHovered || setInternalHovered
 
   const navigationItems = [
-    { id: 'Dashboard', label: 'Dashboard', icon: Home, path: '/AppDashboard', color: '#667eea' },
-    { id: 'Analytics', label: 'Analytics', icon: BarChart3, path: '/analytics', color: '#10b981' }
+    { id: 'Dashboard', label: 'Dashboard', icon: Home, path: '/AppDashboard', color: '#667eea' }, // Indigo
+    { id: 'Analytics', label: 'Analytics', icon: BarChart3, path: '/analytics', color: '#10b981' },
+    ...(connectedAgent?.type === AgentType.Admin
+      ? [{ id: 'Agents', label: 'Agents', icon: BarChart3, path: '/agents', color: '#f59e42' }]
+      : [])
   ]
 
   const shouldShowFullContent = !isCollapsed || isHovered
@@ -62,7 +66,6 @@ export default function Sidebar({
   let convo: any = null;
   let setConversations: any = () => {};
   let setConvo: any = () => {};
-  let connectedAgent = null as any;
   let setConnectedAgent: any = () => {};
   try {
     const ctx = useConversation();
@@ -70,7 +73,6 @@ export default function Sidebar({
     convo = ctx.convo;
     setConversations = ctx.setConversations;
     setConvo = ctx.setConvo;
-    connectedAgent = ctx.connectedAgent;
     setConnectedAgent = ctx.setConnectedAgent;
   } catch (e) {
     // ConversationProvider not present; component will render with defaults
@@ -197,17 +199,6 @@ export default function Sidebar({
               );
             })}
           </ul>
-
-          {/* Quick Actions */}
-          {shouldShowFullContent && (
-            <div className="quick-actions">
-              <div className="section-label">Quick Actions</div>
-              <button className="quick-action-btn">
-                <Sparkles size={18} />
-                <span>New Campaign</span>
-              </button>
-            </div>
-          )}
         </nav>
 
         {/* User Profile */}

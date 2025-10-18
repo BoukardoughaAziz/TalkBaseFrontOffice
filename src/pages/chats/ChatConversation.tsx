@@ -7,7 +7,7 @@ import { ClientInformation } from '@/models/ClientInformation';
 import { Conversation } from '@/models/Conversation';
 import { SenderType } from '@/models/SenderType';
 import conversationService from '@/services/Conversation/conversationService';
-import { ChevronLeft, FileText, Image, Info, LogOut, MapPin, MoreVertical, Paperclip, Phone, PhoneCall, Send, Smile, Users, Video, VideoIcon } from 'lucide-react';
+import { ChevronLeft, FileText, Image, Info, LogOut, MapPin, MoreVertical, Paperclip, Phone, PhoneCall, Send, Smile, Users, Video, VideoIcon, Bot, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import ClientInformationUI from '../ClinetInformation/ClientInformationUI';
@@ -38,13 +38,12 @@ export default function ChatConversations({
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [incomingCall, setIncomingCall] = useState<{from: string, type: 'audio' | 'video'} | null>(null);
   
+
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // const myVideo = useRef<HTMLVideoElement>(null);
   // const userVideo = useRef<HTMLVideoElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-	// const myVideo = useRef()
-	// const userVideo = useRef()
 
   const myVideo = useRef<HTMLVideoElement>(null);
   const userVideo = useRef<HTMLVideoElement>(null);
@@ -55,8 +54,11 @@ export default function ChatConversations({
 	const [ callerSignal, setCallerSignal ] = useState()
 	const [ name, setName ] = useState("")
 
-  const { connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo,socketid } = useConversation();
+  const { connectedAgent, setConnectedAgent, clientInformation, setClientInformation,setShowClientInfo,showClientInfo,socketid,conversations,convo, setConversations, setConvo } = useConversation();
 	const [ stream, setStream ] = useState()
+
+  const conversationRef = useRef(conversation);
+  const conversationsRef = useRef(conversations);
 
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent  = useRef<Socket | null>(null);
@@ -70,7 +72,6 @@ export default function ChatConversations({
     notes: '',
   });
 
-  const { conversations, convo, setConversations, setConvo } = useConversation();
   
   if (showClientInfo) {
     console.log("this is the current state of showClientInfo ", showClientInfo)
@@ -90,15 +91,14 @@ export default function ChatConversations({
   }, [socketid]);
 
   useEffect(() => {
-    connectedAgentRef.current = connectedAgent;
-  }, [connectedAgent]);
+  conversationRef.current = conversation;
+}, [conversation]);
 
-  // useEffect(() => {
-  //   callstateRef.current = callState;
-  //   if (callstateRef) {
-  //     console.log("this is the current callstate",callstateRef)
-  //   }
-  // }, [callState,callstateRef]);
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
+
+
 
 
 useEffect(() => {
@@ -120,38 +120,30 @@ if (convo) {
   console.log("convo has changed---chatconversation :", convo);
 }
   const handleMessageFromClient = (data: any) => {
-    console.log("Message from client to agent received:", data);
-    console.log("this is the conversation  : ", conversation);
-    console.log("this is the data.identifier : ", data.identifier);
-    console.log("------------------------------------------------");
-    console.log("this is the convo  : ", convo);
-    // Update the conversation with the new message
-    if (conversation && data.identifier === conversation.AppClientID) {
-      const updatedConversation = {
-      ...conversation,
-      messages: [...conversation.messages, data]
-      };
-      
-      setConversation(updatedConversation);
-      setConversations(conversations.map(conv => 
-      conv.AppClientID === data.conversationId 
-        ? updatedConversation 
-        : conv
-      ));
-    } else {
-      // Find the conversation and add the message to it instantly
-      setConversations(prevConversations =>
-      prevConversations.map(conv =>
-        conv.AppClientID === data.conversationId
-        ? { ...conv, messages: [...conv.messages, data] }
-        : conv
+    // Normalize target conversation id (some payloads use identifier)
+    const targetId = data.conversationId ?? data.identifier;
+
+    // Update the list instantly using functional update to avoid stale closures
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.AppClientID === targetId
+          ? { ...conv, messages: [...conv.messages, data] }
+          : conv
       )
-      );
+    );
+
+    // If the currently open conversation matches, update it too
+    const current = conversationRef.current;
+    if (current && current.AppClientID === targetId) {
+      const updated = { ...current, messages: [...current.messages, data] } as Conversation;
+      setConversation(updated);
+      conversationRef.current = updated; // keep ref in sync for rapid messages
+      // Smooth scroll to bottom after DOM updates
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
     }
   };
-
-  // Add listener
-  socketClient?.on('MESSAGE_FROM_CLIENT_TO_AGENT', handleMessageFromClient);
 
 // In your socket listener, update the callUser handler:
 
@@ -260,7 +252,7 @@ const answerCall = async () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, []);
+  }, [conversation?.messages.length]);
 
 
   const handleSendMessage = () => {
@@ -472,10 +464,17 @@ const answerCall = async () => {
       .filter(msg => msg.message && msg.message.trim() !== "")
       .map((msg, index) => {
         const isAgent = msg.chatEvent === ChatEvent.MessageFromAgentToClient;
+        const isAI = msg.chatEvent === ChatEvent.MessageFromBaseBuddyToClient;
         return (
           <div key={`msg-${index}`} style={{ marginBottom: '1rem' }}>
-            <div className={`message-wrapper ${isAgent ? "sent" : "received"}`}>
+            <div className={`message-wrapper ${isAgent || isAI ? "sent" : "received"}`}>
               <div className="message-bubble">
+                {isAI && (
+                  <div className="ai-badge">
+                    <Sparkles size={14} />
+                    <span>AI Assistant</span>
+                  </div>
+                )}
                 <p className="message-text">{msg.message}</p>
                 <span className="message-time">
                   {msg.timestamp && !isNaN(new Date(msg.timestamp).getTime())
@@ -971,6 +970,35 @@ const answerCall = async () => {
           color: #111827;
           border: 1px solid #e5e7eb;
           border-bottom-left-radius: 0.25rem;
+        }
+
+        .ai-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.5rem;
+          font-size: 0.7rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+        }
+
+        .ai-badge svg {
+          animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.7;
+            transform: scale(1.1);
+          }
         }
 
         .message-text {

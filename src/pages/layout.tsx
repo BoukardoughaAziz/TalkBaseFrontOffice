@@ -3,17 +3,19 @@ import Sidebar from "./statisticsDashboard/Sidebar";
 import { useEffect, useState } from "react";
 import { AppAgent } from "@/models/AppAgent";
 import Cookies from "js-cookie";
+import { useConversation } from "@/context/ConversationContext";
 
 
 export default function Layout() {
-  const [connectedAgent, setConnectedAgent] = useState<AppAgent | null>(null);
+  const { connectedAgent, setConnectedAgent} = useConversation();
+useEffect(() => {
+
+}, []);
 
   return (
     <div className="app-container" style={{ display: "flex", height: "100vh" }}>
       {/* Sidebar always visible */}
-      <Sidebar 
-        connectedAgent={connectedAgent}
-      />
+      <Sidebar />
 
       {/* Main content area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
