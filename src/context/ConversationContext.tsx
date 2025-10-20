@@ -10,6 +10,7 @@ import { io, Socket } from "socket.io-client";
 interface ConversationContextType {
   user: AppAgent | null;
   token: string | null;
+  setToken: React.Dispatch<React.SetStateAction<string | null>>;
   conversations: Conversation[];
   conversation: Conversation | null;
   setConversation: React.Dispatch<React.SetStateAction<Conversation | undefined>>;
@@ -194,6 +195,7 @@ useEffect(() => {
       value={{
         user,
         token,
+        setToken,
         conversations,
         convo,
         connectedAgent,

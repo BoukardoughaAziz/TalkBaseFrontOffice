@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { useConversation } from "@/context/ConversationContext";
 
 type UserAuthFormProps = HTMLAttributes<HTMLDivElement>;
 
@@ -25,6 +26,7 @@ export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
+  const { setConnectedAgent, setToken } = useConversation();
 
   useEffect(() => {
     console.log("Sign in component mounted");
@@ -79,6 +81,10 @@ async function onSubmit(data: z.infer<typeof formSchema>) {
       document.cookie = `accessToken=${newAccessToken}; path=/;`;
       console.log("different accessToken, updating cookie");
     }
+
+    // Update ConversationContext immediately
+    setConnectedAgent(response.data.user);
+    setToken(newAccessToken);
 
     // Store in Redux
     dispatch(

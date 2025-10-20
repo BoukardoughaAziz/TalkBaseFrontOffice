@@ -54,7 +54,7 @@ export default function Sidebar({
     { id: 'Dashboard', label: 'Dashboard', icon: Home, path: '/AppDashboard', color: '#667eea' }, // Indigo
     { id: 'Analytics', label: 'Analytics', icon: BarChart3, path: '/analytics', color: '#10b981' },
     ...(connectedAgent?.type === AgentType.Admin
-      ? [{ id: 'Agents', label: 'Agents', icon: BarChart3, path: '/agents', color: '#f59e42' }]
+      ? [{ id: 'Agents', label: 'Agents', icon: User, path: '/agents', color: '#f59e42' }]
       : [])
   ]
 
