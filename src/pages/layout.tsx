@@ -1,57 +1,40 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./statisticsDashboard/Sidebar";
 import { useEffect, useState, useRef } from "react";
-import { AppAgent } from "@/models/AppAgent";
-import Cookies from "js-cookie";
 import { useConversation } from "@/context/ConversationContext";
 import { io, Socket } from "socket.io-client";
 import CallState from "@/models/CallState";
 import Peer from "simple-peer";
+import { Phone } from "lucide-react";
 
 export default function Layout() {
-  const { connectedAgent, setConnectedAgent, socketid, conversations, convo } = useConversation();
-  
-  // Call state
+  const { connectedAgent, setConnectedAgent, socketid, conversations } = useConversation();
+
+  // ---- Call states ----
   const [callState, setCallState] = useState<CallState>(CallState.Idle);
-  const [callType, setCallType] = useState<'audio' | 'video' | null>(null);
-  const [incomingCall, setIncomingCall] = useState<{from: string, type: 'audio' | 'video'} | null>(null);
+  const [callType, setCallType] = useState<"audio" | "video" | null>(null);
+  const [incomingCall, setIncomingCall] = useState<{ from: string; type: "audio" | "video" } | null>(null);
   const [receivingCall, setReceivingCall] = useState(false);
   const [caller, setCaller] = useState("");
-  const [callerSignal, setCallerSignal] = useState();
-  const [stream, setStream] = useState();
+  const [callerSignal, setCallerSignal] = useState<any>();
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
-  // Refs
+  // ---- Refs ----
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent = useRef<Socket | null>(null);
   const myVideo = useRef<HTMLVideoElement>(null);
   const userVideo = useRef<HTMLVideoElement>(null);
   const connectionRef = useRef<any>(null);
-
-  const connectedAgentRef = useRef(connectedAgent);
   const socketidRef = useRef(socketid);
-  const callstateRef = useRef(callState);
-  const conversationsRef = useRef(conversations);
-
-  // Keep refs in sync
-  useEffect(() => {
-    connectedAgentRef.current = connectedAgent;
-  }, [connectedAgent]);
 
   useEffect(() => {
     socketidRef.current = socketid;
   }, [socketid]);
 
+  // ---- Initialize sockets ----
   useEffect(() => {
-    callstateRef.current = callState;
-  }, [callState]);
+    console.log("Layout mounted — initializing sockets");
 
-  useEffect(() => {
-    conversationsRef.current = conversations;
-  }, [conversations]);
-
-  // Initialize sockets and set up listeners
-  useEffect(() => {
-    console.log("layout has mounted")
     if (!socketRefClient.current) {
       socketRefClient.current = io(import.meta.env.VITE_SOCK_JS_WIDGET_URL, {
         transports: [import.meta.env.VITE_SOCK_JS_TRANSPORT_PROTOCOL],
@@ -66,65 +49,63 @@ export default function Layout() {
 
     const socketClient = socketRefClient.current;
 
-    // Listen for incoming calls
     socketClient.on("callUser", (data) => {
       if (data.to === socketidRef.current) {
-        console.log("Incoming call for me:", data);
-        
-        setIncomingCall({
-          from: data.from,
-          type: data.calltype || 'audio'
-        });
-        
+        console.log("📞 Incoming call for me:", data);
+
+        setIncomingCall({ from: data.from, type: data.calltype || "audio" });
         setReceivingCall(true);
         setCaller(data.from);
         setCallerSignal(data.signal);
         setCallState(CallState.IncomingCall);
-        setCallType(data.calltype || 'audio');
+        setCallType(data.calltype || "audio");
       }
     });
 
-    // Cleanup on unmount
     return () => {
       socketClient?.off("callUser");
     };
   }, []);
 
+  // ---- Answer call ----
   const answerCall = async () => {
     try {
-      console.log("ANSWERING CALL");
+      console.log("✅ Answering call...");
 
       const localStream = await navigator.mediaDevices.getUserMedia({
-        video: callType === 'video',
-        audio: true
+        video: callType === "video",
+        audio: true,
       });
 
-      // setStream(localStream);
+      setStream(localStream);
 
+      // Display your own video
       if (myVideo.current) {
         myVideo.current.srcObject = localStream;
+        myVideo.current.muted = true; // Prevent echo
       }
 
       const peer = new Peer({
         initiator: false,
         trickle: false,
-        stream: localStream
+        stream: localStream,
       });
 
       peer.on("signal", (data) => {
         socketRefClient.current?.emit("answercall", {
           signal: data,
-          to: caller
+          to: caller,
         });
       });
 
       peer.on("stream", (remoteStream) => {
-        console.log("Received remote stream");
+        console.log("🎥 Received remote stream");
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
         }
       });
 
+      // Apply caller signal
       if (callerSignal) {
         peer.signal(callerSignal);
       }
@@ -132,24 +113,23 @@ export default function Layout() {
       connectionRef.current = peer;
       setCallState(CallState.InCall);
     } catch (error) {
-      console.error("Error answering call:", error);
+      console.error("❌ Error answering call:", error);
     }
   };
 
+  // ---- End call ----
   const handleEndCall = () => {
-    console.log("ENDING CALL");
-    
-    // Clean up peer connection
+    console.log("📴 Ending call");
+
     if (connectionRef.current) {
       connectionRef.current.destroy();
       connectionRef.current = null;
     }
 
-    // Stop all tracks in streams
-    // if (stream) {
-    //   stream.getTracks().forEach(track => track.stop());
-    //   setStream(null);
-    // }
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
 
     setCallState(CallState.Idle);
     setCallType(null);
@@ -158,37 +138,114 @@ export default function Layout() {
     setCaller("");
   };
 
-  // Expose socket and call functions to child components via context if needed
-  // Or render call UI here if it should be global
-
   return (
     <div className="app-container" style={{ display: "flex", height: "100vh" }}>
-      {/* Sidebar always visible */}
       <Sidebar />
 
-      {/* Main content area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        {/* Route content */}
-        <div style={{ flex: 1, overflow: "auto" }}>
-          <Outlet context={{
-            callState,
-            setCallState,
-            callType,
-            setCallType,
-            incomingCall,
-            setIncomingCall,
-            receivingCall,
-            setReceivingCall,
-            caller,
-            setCaller,
-            answerCall,
-            handleEndCall,
-            myVideo,
-            userVideo,
-            socketRefClient,
-            socketRefAgent,
-            connectionRef
-          }} />
+        <div style={{ flex: 1, overflow: "auto", position: "relative" }}>
+          {/* 🟢 Incoming Call Modal */}
+          {callState === CallState.IncomingCall && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <Phone size={24} color="blue" />
+                  <h3>Incoming {callType} call</h3>
+                  <p>Caller: {caller}</p>
+                </div>
+                <div className="modal-actions">
+                  <button className="modal-btn btn-success" onClick={answerCall}>
+                    Answer
+                  </button>
+                  <button className="modal-btn confirm" onClick={handleEndCall}>
+                    Deny
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 🎥 Video Call Overlay */}
+          {callState === CallState.InCall && (
+            <div
+              className="video-call-overlay"
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.8)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+                zIndex: 9999,
+              }}
+            >
+              {/* Remote Video */}
+              <video
+                ref={userVideo}
+                autoPlay
+                playsInline
+                className="remote-video"
+                style={{
+                  width: "70%",
+                  borderRadius: "12px",
+                  backgroundColor: "black",
+                  transform: "scaleX(-1)",
+                }}
+              />
+
+              {/* Local (Self) Video */}
+              <video
+                ref={myVideo}
+                autoPlay
+                playsInline
+                muted
+                className="local-video"
+                style={{
+                  position: "absolute",
+                  bottom: "20px",
+                  right: "20px",
+                  width: "200px",
+                  height: "150px",
+                  borderRadius: "12px",
+                  border: "2px solid white",
+                  backgroundColor: "black",
+                  transform: "scaleX(-1)",
+                }}
+              />
+
+              <button
+                className="modal-btn confirm"
+                style={{ marginTop: "20px" }}
+                onClick={handleEndCall}
+              >
+                Hangup
+              </button>
+            </div>
+          )}
+
+          {/* Normal content */}
+          <Outlet
+            context={{
+              callState,
+              setCallState,
+              callType,
+              setCallType,
+              incomingCall,
+              setIncomingCall,
+              receivingCall,
+              setReceivingCall,
+              caller,
+              setCaller,
+              answerCall,
+              handleEndCall,
+              myVideo,
+              userVideo,
+              socketRefClient,
+              socketRefAgent,
+              connectionRef,
+            }}
+          />
         </div>
       </div>
     </div>
