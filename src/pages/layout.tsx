@@ -18,7 +18,6 @@ export default function Layout() {
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState<any>();
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   // ---- Refs ----
   const socketRefClient = useRef<Socket | null>(null);
@@ -27,26 +26,10 @@ export default function Layout() {
   const userVideo = useRef<HTMLVideoElement>(null);
   const connectionRef = useRef<any>(null);
   const socketidRef = useRef(socketid);
-  const peerRef = useRef<any>(null);
 
   useEffect(() => {
     socketidRef.current = socketid;
   }, [socketid]);
-
-  // ---- Update video elements when streams change ----
-  useEffect(() => {
-    if (myVideo.current && stream) {
-      console.log("🎬 Setting local stream to myVideo");
-      myVideo.current.srcObject = stream;
-    }
-  }, [stream]);
-
-  useEffect(() => {
-    if (userVideo.current && remoteStream) {
-      console.log("📹 Setting remote stream to userVideo");
-      userVideo.current.srcObject = remoteStream;
-    }
-  }, [remoteStream]);
 
   // ---- Initialize sockets ----
   useEffect(() => {
@@ -79,21 +62,8 @@ export default function Layout() {
       }
     });
 
-    // Listen for answer acknowledgment
-    socketClient.on("callAnswered", (data) => {
-      console.log("✅ Call answered, applying answer signal");
-      if (peerRef.current && data.signal) {
-        try {
-          peerRef.current.signal(data.signal);
-        } catch (error) {
-          console.error("Error applying answer signal:", error);
-        }
-      }
-    });
-
     return () => {
       socketClient?.off("callUser");
-      socketClient?.off("callAnswered");
     };
   }, []);
 
@@ -102,68 +72,46 @@ export default function Layout() {
     try {
       console.log("✅ Answering call...");
 
-      // Get media stream
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: callType === "video",
-        audio: true,
-      });
+      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
-      console.log("🎤 Local stream obtained:", localStream.getTracks());
+
       setStream(localStream);
 
-      // Create peer connection as non-initiator
+      // Display your own video
+      if (myVideo.current) {
+        myVideo.current.srcObject = localStream;
+        myVideo.current.muted = true; // Prevent echo
+      }
+
       const peer = new Peer({
         initiator: false,
         trickle: false,
         stream: localStream,
-        config: {
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" },
-          ],
-        },
       });
 
-      // When we generate a signal, send it back to the caller
-      peer.on("signal", (signalData) => {
-        console.log("📤 Generated answer signal, sending to caller:", caller);
+      peer.on("signal", (data) => {
         socketRefClient.current?.emit("answercall", {
-          signal: signalData,
+          signal: data,
           to: caller,
         });
       });
 
-      // When we receive the remote stream
-      peer.on("stream", (incomingStream) => {
-        console.log("🎥 Received remote stream with tracks:", incomingStream.getTracks());
-        setRemoteStream(incomingStream);
-      });
-
-      // Handle errors
-      peer.on("error", (err) => {
-        console.error("❌ Peer connection error:", err);
-      });
-
-      peer.on("close", () => {
-        console.log("Connection closed");
-      });
-
-      // Apply caller's initial offer signal
-      if (callerSignal) {
-        console.log("📥 Applying caller signal");
-        try {
-          peer.signal(callerSignal);
-        } catch (error) {
-          console.error("Error signaling back to caller:", error);
+      peer.on("stream", (remoteStream) => {
+        console.log("🎥 Received remote stream");
+        if (userVideo.current) {
+          userVideo.current.srcObject = remoteStream;
         }
+      });
+
+      // Apply caller signal
+      if (callerSignal) {
+        peer.signal(callerSignal);
       }
 
-      peerRef.current = peer;
       connectionRef.current = peer;
       setCallState(CallState.InCall);
     } catch (error) {
       console.error("❌ Error answering call:", error);
-      alert(`Failed to access camera/microphone: ${error}`);
     }
   };
 
@@ -171,48 +119,21 @@ export default function Layout() {
   const handleEndCall = () => {
     console.log("📴 Ending call");
 
-    // Destroy peer connection
-    if (peerRef.current) {
-      try {
-        peerRef.current.destroy();
-      } catch (e) {
-        console.error("Error destroying peer:", e);
-      }
-      peerRef.current = null;
-    }
-
     if (connectionRef.current) {
-      try {
-        connectionRef.current.destroy();
-      } catch (e) {
-        console.error("Error destroying connection:", e);
-      }
+      connectionRef.current.destroy();
       connectionRef.current = null;
     }
 
-    // Stop local stream
     if (stream) {
-      stream.getTracks().forEach((track) => {
-        track.stop();
-      });
+      stream.getTracks().forEach((track) => track.stop());
       setStream(null);
     }
 
-    // Clear video elements
-    if (myVideo.current) {
-      myVideo.current.srcObject = null;
-    }
-    if (userVideo.current) {
-      userVideo.current.srcObject = null;
-    }
-
-    setRemoteStream(null);
     setCallState(CallState.Idle);
     setCallType(null);
     setIncomingCall(null);
     setReceivingCall(false);
     setCaller("");
-    setCallerSignal(null);
   };
 
   return (
@@ -259,14 +180,12 @@ export default function Layout() {
             >
               {/* Remote Video */}
               <video
-                key="remote-video"
                 ref={userVideo}
                 autoPlay
                 playsInline
                 className="remote-video"
                 style={{
                   width: "70%",
-                  height: "auto",
                   borderRadius: "12px",
                   backgroundColor: "black",
                   transform: "scaleX(-1)",
@@ -275,7 +194,6 @@ export default function Layout() {
 
               {/* Local (Self) Video */}
               <video
-                key="local-video"
                 ref={myVideo}
                 autoPlay
                 playsInline
