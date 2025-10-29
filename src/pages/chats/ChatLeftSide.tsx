@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Search, Settings, Plus, MessageSquare, Users, Archive, Star, UserCheck, ToggleRight, User, ChevronDown, Clock, Check, CheckCheck, Bot, Sparkles } from 'lucide-react'
+import { Search, Settings, Plus, MessageSquare, Users, Archive, Star, UserCheck, ToggleRight, User, ChevronDown, Clock, Check, CheckCheck, Bot, Sparkles, UserRound } from 'lucide-react'
 import conversationService from '@/services/Conversation/conversationService'
 import { AppAgent } from '@/models/AppAgent';
 import AgentType from '@/models/AgentType';
@@ -65,6 +65,30 @@ export default function ChatLeftSide() {
 
     try {
       socketRefClient.current?.emit('markConversationsHandledByBaseBuddy', {
+        appClientId: conv.AppClientID,
+      })
+    } catch (e) {
+      console.warn('Failed to emit handoff event, UI updated optimistically', e)
+    }
+  }
+
+
+    const handleGiveToAgent = (conv: Conversation) => {
+      console.log("this is the conversation that i'll be handeling" ,conv.AppClientID)
+    // Optimistically update UI
+    setConversations((prev) =>
+      (prev || []).map((c) =>
+        c.AppClientID === conv.AppClientID ? { ...c, isHandledBy_BB: true } : c
+      )
+    )
+
+    if (convo && convo.AppClientID === conv.AppClientID) {
+      setConvo({ ...conv, isHandledBy_BB: true } as Conversation)
+      setConversation({ ...conv, isHandledBy_BB: true } as Conversation)
+    }
+
+    try {
+      socketRefClient.current?.emit('markConversationsHandledByHuman', {
         appClientId: conv.AppClientID,
       })
     } catch (e) {
@@ -340,19 +364,32 @@ export default function ChatLeftSide() {
                     </div>
                   </div>
                   
-                    {!conversation.isHandledBy_BB && (
-                    <button 
-                      className="ai-handoff-button"
-                      title="Give this conversation to BaseBuddy"
-                      onClick={(e) => {
-                      e.stopPropagation()
-                      handleGiveToAI(conversation)
-                      }}
-                    >
-                      <Sparkles size={16} />
-                      <span className="ai-handoff-label">Give to AI</span>
-                    </button>
-                    )}
+        {!conversation.isHandledBy_BB ? (
+          <button 
+            className="ai-handoff-button"
+            title="Give this conversation to BaseBuddy"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleGiveToAI(conversation);
+            }}
+          >
+            <Sparkles size={16} />
+            <span className="ai-handoff-label">Give to AI</span>
+          </button>
+        ) : (
+          <button
+            className="human-handoff-button"
+            title="Assign this conversation to a human agent"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleGiveToAgent(conversation);
+            }}
+          >
+            <UserRound size={16} />
+            <span className="human-handoff-label">Assign to Agent</span>
+          </button>
+        )}
+
                 </div>
               )
             })
@@ -880,7 +917,32 @@ export default function ChatLeftSide() {
           box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
         }
 
-        .ai-handoff-label {
+
+        .human-handoff-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: linear-gradient(135deg, #a45a52 0%, #8d021f 100%);
+          color: white;
+          border: none;
+          padding: 6px 10px;
+          border-radius: 9999px;
+          cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+          opacity: 0;
+          flex-shrink: 0;
+        }
+
+        .conversation-item:hover .human-handoff-button {
+          opacity: 1;
+        }
+
+        .human-handoff-button:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
+        }
+
+        .human-handoff-label {
           font-size: 12px;
           font-weight: 700;
           letter-spacing: 0.2px;
