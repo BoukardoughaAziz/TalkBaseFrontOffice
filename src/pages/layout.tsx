@@ -5,7 +5,15 @@ import { useConversation } from "@/context/ConversationContext";
 import { io, Socket } from "socket.io-client";
 import CallState from "@/models/CallState";
 import Peer from "simple-peer";
-import { Phone } from "lucide-react";
+import { Phone, X, Bell } from "lucide-react";
+
+interface Notification {
+  id: string;
+  type: "new-conversation" | "conversation-handled";
+  title: string;
+  message: string;
+  conversationId?: string;
+}
 
 export default function Layout() {
   const { connectedAgent, setConnectedAgent, socketid, conversations } = useConversation();
@@ -19,6 +27,10 @@ export default function Layout() {
   const [callerSignal, setCallerSignal] = useState<any>();
   const [stream, setStream] = useState<MediaStream | null>(null);
 
+  // ---- Notification states ----
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const notificationTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
   // ---- Refs ----
   const socketRefClient = useRef<Socket | null>(null);
   const socketRefAgent = useRef<Socket | null>(null);
@@ -30,6 +42,36 @@ export default function Layout() {
   useEffect(() => {
     socketidRef.current = socketid;
   }, [socketid]);
+
+  // ---- Add notification ----
+  const addNotification = (notification: Notification, duration: number = 3000) => {
+    const id = notification.id;
+    
+    // Clear existing timer if any
+    if (notificationTimers.current.has(id)) {
+      clearTimeout(notificationTimers.current.get(id));
+    }
+
+    // Add notification to state
+    setNotifications((prev) => [...prev, notification]);
+
+    // Set auto-remove timer
+    const timer = setTimeout(() => {
+      removeNotification(id);
+    }, duration);
+
+    notificationTimers.current.set(id, timer);
+  };
+
+  // ---- Remove notification ----
+  const removeNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+    
+    if (notificationTimers.current.has(id)) {
+      clearTimeout(notificationTimers.current.get(id));
+      notificationTimers.current.delete(id);
+    }
+  };
 
   // ---- Initialize sockets ----
   useEffect(() => {
@@ -62,8 +104,45 @@ export default function Layout() {
       }
     });
 
+    socketRefClient.current?.on('AConversationWillBeHandledByAgent', (conversationId) => {
+      console.log("No More AI For This Conversation", conversationId);
+      
+      // Show notification for AI to Agent transfer
+      addNotification(
+        {
+          id: `handled-${conversationId}`,
+          type: "conversation-handled",
+          title: "Conversation Transferred",
+          message: "A conversation has been transferred to a human agent",
+          conversationId,
+        },
+        3000
+      );
+    });
+
+    socketRefClient.current?.on('ConversationStarted', (NewConversation, AppAgentID) => {
+      console.log("*************************************************");
+      console.log("A New Conversation Was Added", NewConversation);
+      console.log("This is the Agent handling it", AppAgentID);
+      console.log("*************************************************");
+
+      // Show notification for new conversation
+      addNotification(
+        {
+          id: `new-conv-${NewConversation._id || NewConversation.id}`,
+          type: "new-conversation",
+          title: "New Conversation",
+          message: "You have a new conversation to handle",
+          conversationId: NewConversation._id || NewConversation.id,
+        },
+        3000
+      );
+    });
+
     return () => {
       socketClient?.off("callUser");
+      socketClient?.off("AConversationWillBeHandledByAgent");
+      socketClient?.off("ConversationStarted");
     };
   }, []);
 
@@ -74,13 +153,11 @@ export default function Layout() {
 
       const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
-
       setStream(localStream);
 
-      // Display your own video
       if (myVideo.current) {
         myVideo.current.srcObject = localStream;
-        myVideo.current.muted = true; // Prevent echo
+        myVideo.current.muted = true;
       }
 
       const peer = new Peer({
@@ -103,7 +180,6 @@ export default function Layout() {
         }
       });
 
-      // Apply caller signal
       if (callerSignal) {
         peer.signal(callerSignal);
       }
@@ -142,6 +218,102 @@ export default function Layout() {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ flex: 1, overflow: "auto", position: "relative" }}>
+          {/* 🔔 Notifications Container */}
+          <div
+            className="notifications-container"
+            style={{
+              position: "fixed",
+              top: "20px",
+              right: "20px",
+              zIndex: 9998,
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              maxWidth: "400px",
+            }}
+          >
+            {notifications.map((notif) => (
+              <div
+                key={notif.id}
+                className={`notification notification-${notif.type}`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "16px",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                  backgroundColor:
+                    notif.type === "new-conversation" ? "#dbeafe" : "#dcfce7",
+                  border:
+                    notif.type === "new-conversation"
+                      ? "1px solid #0284c7"
+                      : "1px solid #16a34a",
+                  animation: "slideIn 0.3s ease-out",
+                }}
+              >
+                <Bell
+                  size={20}
+                  style={{
+                    color:
+                      notif.type === "new-conversation" ? "#0284c7" : "#16a34a",
+                    flexShrink: 0,
+                  }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      margin: "0 0 4px 0",
+                      fontWeight: "600",
+                      color:
+                        notif.type === "new-conversation"
+                          ? "#0c4a6e"
+                          : "#15803d",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {notif.title}
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      color:
+                        notif.type === "new-conversation"
+                          ? "#0369a1"
+                          : "#22863a",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {notif.message}
+                  </p>
+                </div>
+                <button
+                  onClick={() => removeNotification(notif.id)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <X
+                    size={18}
+                    style={{
+                      color:
+                        notif.type === "new-conversation"
+                          ? "#0284c7"
+                          : "#16a34a",
+                    }}
+                  />
+                </button>
+              </div>
+            ))}
+          </div>
+
           {/* 🟢 Incoming Call Modal */}
           {callState === CallState.IncomingCall && (
             <div className="modal-overlay">
@@ -242,10 +414,24 @@ export default function Layout() {
               socketRefClient,
               socketRefAgent,
               connectionRef,
+              removeNotification,
             }}
           />
         </div>
       </div>
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }

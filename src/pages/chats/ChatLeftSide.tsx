@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Search, Settings, Plus, MoreHorizontal, MessageSquare, Users, Archive, Star, UserCheck, ToggleRight, User, ChevronDown, Clock, Check, CheckCheck } from 'lucide-react'
+import { Search, Settings, Plus, MessageSquare, Users, Archive, Star, UserCheck, ToggleRight, User, ChevronDown, Clock, Check, CheckCheck, Bot, Sparkles } from 'lucide-react'
 import conversationService from '@/services/Conversation/conversationService'
 import { AppAgent } from '@/models/AppAgent';
 import AgentType from '@/models/AgentType';
@@ -50,6 +50,28 @@ export default function ChatLeftSide() {
     conversation.AppClientID.toLowerCase().includes(search.toLowerCase())
   )
 
+  const handleGiveToAI = (conv: Conversation) => {
+    // Optimistically update UI
+    setConversations((prev) =>
+      (prev || []).map((c) =>
+        c.AppClientID === conv.AppClientID ? { ...c, isHandledBy_BB: true } : c
+      )
+    )
+
+    if (convo && convo.AppClientID === conv.AppClientID) {
+      setConvo({ ...conv, isHandledBy_BB: true } as Conversation)
+      setConversation({ ...conv, isHandledBy_BB: true } as Conversation)
+    }
+
+    try {
+      socketRefClient.current?.emit('markConversationsHandledByBaseBuddy', {
+        appClientId: conv.AppClientID,
+      })
+    } catch (e) {
+      console.warn('Failed to emit handoff event, UI updated optimistically', e)
+    }
+  }
+
   const handleConversationClick = (conversation: Conversation) => {
     setSelectedAppClientID(conversation.AppClientID)
     console.log("this is the convo  : ", convo);
@@ -66,8 +88,31 @@ export default function ChatLeftSide() {
   }
 
 
-  socketRefClient.current?.on('AConversationWillBeHandledByAgent', (conversationId) => {
-    console.log("No More AI For This Conversation",conversationId)
+  // remove any previous listener to avoid duplicate handlers
+  socketRefClient.current?.off('AConversationWillBeHandledByAgent')
+  socketRefClient.current?.on('AConversationWillBeHandledByAgent', (conversationId: string | { AppClientID?: string } | any) => {
+    // normalize payload to get AppClientID
+    const appClientId =
+      typeof conversationId === 'string'
+        ? conversationId
+        : conversationId?.AppClientID ?? conversationId?.appClientId
+
+    if (!appClientId) return
+
+    console.log('No More AI For This Conversation', appClientId)
+
+    // update the conversations list in realtime
+    setConversations(prev =>
+      prev
+        ? prev.map(c => (c.AppClientID === appClientId ? { ...c, isHandledBy_BB: false } : c))
+        : prev
+    )
+
+    // if the currently open convo matches, update it too
+    if (convo?.AppClientID === appClientId) {
+      setConvo(prev => (prev ? { ...prev, isHandledBy_BB: false } : prev))
+      setConversation(prev => (prev ? { ...prev, isHandledBy_BB: false } : prev))
+    }
   })
   socketRefClient.current?.on('ConversationStarted', (NewConversation, AppAgentID) => {
     console.log("*************************************************")
@@ -295,15 +340,19 @@ export default function ChatLeftSide() {
                     </div>
                   </div>
                   
-                  <button 
-                    className="more-button"
-                    onClick={(e) => {
+                    {!conversation.isHandledBy_BB && (
+                    <button 
+                      className="ai-handoff-button"
+                      title="Give this conversation to BaseBuddy"
+                      onClick={(e) => {
                       e.stopPropagation()
-                      // Handle more actions
-                    }}
-                  >
-                    <MoreHorizontal size={18} />
-                  </button>
+                      handleGiveToAI(conversation)
+                      }}
+                    >
+                      <Sparkles size={16} />
+                      <span className="ai-handoff-label">Give to AI</span>
+                    </button>
+                    )}
                 </div>
               )
             })
@@ -804,6 +853,37 @@ export default function ChatLeftSide() {
         .more-button:hover {
           background: #f3f4f6;
           color: #667eea;
+        }
+
+        /* AI handoff button */
+        .ai-handoff-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 6px 10px;
+          border-radius: 9999px;
+          cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+          opacity: 0;
+          flex-shrink: 0;
+        }
+
+        .conversation-item:hover .ai-handoff-button {
+          opacity: 1;
+        }
+
+        .ai-handoff-button:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
+        }
+
+        .ai-handoff-label {
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
         }
 
         /* Empty State */
