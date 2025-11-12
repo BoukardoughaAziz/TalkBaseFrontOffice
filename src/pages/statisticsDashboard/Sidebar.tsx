@@ -14,7 +14,8 @@ import {
   ChevronRight,
   LogOut,
   Sparkles,
-  Activity
+  Activity,
+  Mail
 } from 'lucide-react'
 import { AppAgent } from '@/models/AppAgent';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -55,6 +56,9 @@ export default function Sidebar({
     { id: 'Analytics', label: 'Analytics', icon: BarChart3, path: '/analytics', color: '#10b981' },
     ...(connectedAgent?.type === AgentType.Admin
       ? [{ id: 'Agents', label: 'Agents', icon: User, path: '/agents', color: '#f59e42' }]
+      : []),
+          ...(connectedAgent?.type === AgentType.Admin
+      ? [{ id: 'Email Campaigns', label: 'Email Campaigns', icon: Mail, path: '/email-campaigns', color: '#800080' }]
       : [])
   ]
 

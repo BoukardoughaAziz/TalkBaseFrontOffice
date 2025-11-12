@@ -17,6 +17,14 @@ const routesConfig = [
     isActive: true,
     roles: ['ADMIN'], 
   },
+    {
+    path: '/email-campaigns',
+    component: 'EmailCampaign',
+    label: 'Email Campaigns',
+    icon: 'IconMail',
+    isAGap: false,
+    isActive: true,
+  },
   {
     path: '/ClientInformationUI',
     component: 'ClientInformationUI',

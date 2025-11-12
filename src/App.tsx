@@ -12,6 +12,7 @@ import GoogleLookerDashboard from "./pages/GoogleLookerDashboard.js";
 import Layout from "./pages/layout.js";
 import './assets/css/style.css'
 import './assets/js/dropdown-bootstrap-extended.js'
+import EmailCampaign from "./pages/EmailCampaign.js";
 
 export const ALL_COMPONENTS = {
   AppDashboard: { name: AppDashboard, value: <AppDashboard /> },
@@ -20,6 +21,7 @@ export const ALL_COMPONENTS = {
   SignIn: { name: SignIn, value: <SignIn /> },
   EmailVerification: { name: EmailVerification, value: <EmailVerification /> },
   AgentManagement: { name: AgentManagement, value: <AgentManagement /> },
+  EmailCampaign: { name: EmailCampaign, value: <EmailCampaign /> },
   GoogleLookerDashboard: { name: GoogleLookerDashboard, value: <GoogleLookerDashboard /> }, // ✅ key fixed
   NotFoundPage: { name: NotFoundPage, value: <NotFoundPage /> }, 
 };
